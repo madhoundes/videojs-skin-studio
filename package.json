@@ -7,7 +7,7 @@
   "type": "module",
   "scripts": {
     "core": "node tools/extract-core.mjs",
-    "build": "node build.mjs",
+    "bundle": "node build.mjs",
     "all": "node tools/extract-core.mjs && node build.mjs"
   },
   "dependencies": {

@@ -77,10 +77,10 @@ The studio writes both for you. The theme code holds every setting, so nothing i
 
 ```bash
 npm install
-npm run all     # core + build: studio.html -> src/core.js -> reskin.js and reskin-lite.js
+npm run all     # core + bundle: studio.html -> src/core.js -> reskin.js and reskin-lite.js
 ```
 
-`npm run core` regenerates `src/core.js` from `studio.html`. `npm run build` writes both bundles.
+`npm run core` regenerates `src/core.js` from `studio.html`. `npm run bundle` writes both bundles. The bundles are committed, so Vercel serves the folder as it is and runs no build step.
 
 ## Accessibility
 
