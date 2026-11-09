@@ -743,11 +743,11 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; justify-content: 
 </footer>
 <p class="sr-only" aria-live="polite" id="live"></p>
 
-<script src="reskin.js"></script>
+<script src="reskin.js?v=3"></script>
 <script>
 (() => {
   const $ = id => document.getElementById(id);
-  const SITE = /claude\.ai|claudeusercontent|anthropic/.test(location.hostname) || location.protocol === "file:" ? "https://reskin.vercel.app" : location.origin;
+  const SITE = /claude\.ai|claudeusercontent|anthropic/.test(location.hostname) || location.protocol === "file:" ? "https://videojs-skin-studio.vercel.app" : location.origin;
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   const SAMPLES = [

@@ -611,6 +611,9 @@ position: absolute; inset: 0; display: grid; align-content: start; gap: 2px;
 padding: 6px; overflow: auto; outline: none;
 transition: translate .22s ease, opacity .22s ease;
 }
+/* closed submenus carry [hidden]; the display: grid above would otherwise show them stacked on the root list */
+.rs-menu-root[hidden], .rs-menu-panel[hidden],
+.rs-menu-panel[data-submenu]:not([data-open]):not([data-ending-style]) { display: none !important; }
 .rs-menu-root[data-child-open] { translate: -100% 0; opacity: 0; }
 .rs-menu-panel[data-submenu] { z-index: 1; }
 .rs-menu-panel[data-submenu][data-starting-style], .rs-menu-panel[data-submenu][data-ending-style] { translate: 100% 0; opacity: 0; pointer-events: none; }
