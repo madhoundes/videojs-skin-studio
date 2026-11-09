@@ -1,0 +1,22 @@
+WEBVTT
+
+00:00.600 --> 00:05.037 line:-3
+<v Maya>Welcome back to Frame Rate, the show about how video gets made. I'm Maya.
+
+00:05.387 --> 00:13.217 line:-3
+<v Theo>And I'm Theo. Today we're talking about video players, the part of the page everyone touches and nobody notices.
+
+00:13.567 --> 00:19.305 line:-3
+<v Maya>Right. Play, pause, the seek bar. If those feel off, people leave before your video gets a chance.
+
+00:19.655 --> 00:26.162 line:-3
+<v Theo>So the player skin is really part of your brand. The colors, the type, even the shape of the play button.
+
+00:26.512 --> 00:31.461 line:-3
+<v Maya>And it has to work for everyone. Keyboard, captions, and buttons big enough for a thumb.
+
+00:31.811 --> 00:35.950 line:-3
+<v Theo>Which is exactly why you can read every word we're saying right now.
+
+00:36.300 --> 00:38.071 line:-3
+<v Maya>Ha. Okay, let's get into it.

@@ -1,0 +1,22 @@
+WEBVTT
+
+00:00.600 --> 00:05.037 line:-3
+<v Maya>Bon retour sur Frame Rate, l’émission qui raconte comment se fabrique la vidéo. Je suis Maya.
+
+00:05.387 --> 00:13.217 line:-3
+<v Théo>Et moi, c’est Théo. Aujourd’hui, on parle des lecteurs vidéo, la partie de la page que tout le monde touche et que personne ne remarque.
+
+00:13.567 --> 00:19.305 line:-3
+<v Maya>Exactement. Lecture, pause, la barre de progression. Si ça cloche, les gens partent avant que la vidéo ait sa chance.
+
+00:19.655 --> 00:26.162 line:-3
+<v Théo>Donc l’habillage du lecteur fait vraiment partie de votre marque. Les couleurs, la typo, même la forme du bouton lecture.
+
+00:26.512 --> 00:31.461 line:-3
+<v Maya>Et il doit fonctionner pour tout le monde. Clavier, sous-titres, et des boutons assez grands pour un pouce.
+
+00:31.811 --> 00:35.950 line:-3
+<v Théo>C’est exactement pour ça que vous pouvez lire chaque mot qu’on dit en ce moment.
+
+00:36.300 --> 00:38.071 line:-3
+<v Maya>Ha. Bon, allons-y.

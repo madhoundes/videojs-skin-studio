@@ -1,0 +1,16 @@
+WEBVTT
+
+00:00.500 --> 00:04.500 line:-3
+[Soft orchestral music]
+
+00:05.000 --> 00:11.500 line:-3
+[Birds chirping across the meadow]
+
+00:12.000 --> 00:15.500 line:-3
+[Water trickling over stones]
+
+00:16.000 --> 00:22.800 line:-3
+[A bird yawns and shakes its feathers]
+
+00:23.300 --> 00:29.500 line:-3
+[Music swells]

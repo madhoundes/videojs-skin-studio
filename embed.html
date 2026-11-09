@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reskin player</title>
+<meta name="robots" content="noindex">
+<style>
+  html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; }
+  body { display: grid; place-items: center; }
+  reskin-player { width: 100%; }
+  reskin-player .rs-layout { grid-template-columns: min(calc(100vw - 286px), calc(100vh * var(--r, 1.7778))) 272px; justify-content: center; gap: 14px; height: min(100vh, calc((100vw - 286px) / var(--r, 1.7778))); }
+  reskin-player .rs-solo { width: min(100vw, calc(100vh * var(--r, 1.7778))); margin: auto; }
+  @media (max-width: 760px) {
+    reskin-player .rs-layout { grid-template-columns: min(100vw, calc(100vh * var(--r, 1.7778))); height: auto; }
+    reskin-player .rs-transcript { display: none; }
+  }
+</style>
+<script src="./reskin.js"></script>
+</head>
+<body>
+<script>
+  // Every setting comes from the link: theme, video, logo, captions, chapters, thumbnails.
+  var q = new URLSearchParams(location.search);
+  var el = document.createElement("reskin-player");
+  ["theme", "src", "playback-id", "poster", "logo", "symbol", "chapters", "thumbnails", "crossorigin"].forEach(function (k) { var v = q.get(k); if (v) el.setAttribute(k, v); });
+  var caps = q.getAll("cap");
+  if (caps.length) el.setAttribute("captions", caps.join(","));
+  var t = window.Reskin && Reskin.decode(q.get("theme") || "");
+  var r = t && t.aspect === "9 / 16" ? 9 / 16 : t && t.aspect === "1 / 1" ? 1 : 16 / 9;
+  document.documentElement.style.setProperty("--r", r);
+  document.body.appendChild(el);
+</script>
+</body>
+</html>

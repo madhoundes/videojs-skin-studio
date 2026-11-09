@@ -1,0 +1,20 @@
+{
+  "name": "reskin",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Upload a logo, get a Video.js v10 player skin in your brand.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "core": "node tools/extract-core.mjs",
+    "build": "node build.mjs",
+    "all": "node tools/extract-core.mjs && node build.mjs"
+  },
+  "dependencies": {
+    "@videojs/html": "10.1.0",
+    "@videojs/mux-video": "10.1.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.24.2"
+  }
+}

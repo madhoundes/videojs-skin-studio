@@ -1,0 +1,1237 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reskin</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Upload your brand and get a Video.js v10 player that wears it. Free and open source.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,500;12..96,650;12..96,700&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: the page wears the brand on show. A glowing hero (copy left, the live player right with numbered pins and the brand kit it picked up),
+   then bands that change color section by section: a dark screening room for the directions, a paper band for how the logo is read,
+   a band tinted in the brand for the presets, the code, the player features, and a closing band in the brand's deep color. */
+@property --brand { syntax: "<color>"; inherits: true; initial-value: #13a3a0; }
+@property --brand-2 { syntax: "<color>"; inherits: true; initial-value: #ff7a59; }
+@property --brand-deep { syntax: "<color>"; inherits: true; initial-value: #0b2230; }
+:root {
+  --brand: #13a3a0;
+  --brand-2: #ff7a59;
+  --brand-deep: #0b2230;
+  --bg: #f7f7f8;
+  --surface: #ffffff;
+  --sunk: #efeff2;
+  --ink: #141418;
+  --ink-2: #3b3b44;
+  --muted: #676772;
+  --line: #e3e3e9;
+  --line-2: #cbcbd3;
+  --plate: #f4f4f1;
+  --plate-line: rgb(20 20 24 / .07);
+  --grid: rgb(20 20 24 / .06);
+  --glow-a: 34%;
+  --glow-b: 26%;
+  --tint-bg: color-mix(in oklab, var(--brand) 11%, #ffffff);
+  --tint-ink: #141418;
+  --tint-muted: color-mix(in oklab, var(--brand-deep) 55%, #6b6b75);
+  --tint-line: color-mix(in oklab, var(--brand) 22%, #e3e3e9);
+  --night: #0e0f12;
+  --night-2: #17181c;
+  --night-ink: #f3f3f5;
+  --night-muted: #9c9ca7;
+  --night-line: #26272d;
+  --code-bg: #141418;
+  --code-ink: #e8e8ec;
+  --code-dim: #8d8d98;
+  --code-tag: #9fc1d6;
+  --code-attr: #c9b38a;
+  --code-str: #b5d2a8;
+  --shadow: 0 1px 2px rgb(20 20 24 / .05), 0 30px 60px -34px rgb(20 20 24 / .35);
+  --display: "Bricolage Grotesque", "Geist", "Segoe UI", system-ui, sans-serif;
+  --font: "Geist", "Segoe UI", system-ui, sans-serif;
+  --mono: "Geist Mono", ui-monospace, Menlo, Consolas, monospace;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  color-scheme: light;
+  transition: --brand .8s var(--ease), --brand-2 .8s var(--ease), --brand-deep .8s var(--ease);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b0b0d; --surface: #131316; --sunk: #1a1a1f; --ink: #f2f2f4; --ink-2: #cacad2; --muted: #9b9ba7;
+    --line: #24242a; --line-2: #34343c; --glow-a: 46%; --glow-b: 34%; --grid: rgb(255 255 255 / .045);
+    --tint-bg: color-mix(in oklab, var(--brand-deep) 88%, #000000); --tint-ink: #f2f2f4; --tint-muted: color-mix(in oklab, var(--brand) 30%, #a7a7b2); --tint-line: color-mix(in oklab, var(--brand) 22%, #2a2a31);
+    --night: #050506; --night-2: #111114; --night-line: #1f2025;
+    --code-bg: #08080a;
+    --shadow: 0 1px 2px rgb(0 0 0 / .4), 0 30px 60px -30px rgb(0 0 0 / .85);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b0b0d; --surface: #131316; --sunk: #1a1a1f; --ink: #f2f2f4; --ink-2: #cacad2; --muted: #9b9ba7;
+  --line: #24242a; --line-2: #34343c; --glow-a: 46%; --glow-b: 34%; --grid: rgb(255 255 255 / .045);
+  --tint-bg: color-mix(in oklab, var(--brand-deep) 88%, #000000); --tint-ink: #f2f2f4; --tint-muted: color-mix(in oklab, var(--brand) 30%, #a7a7b2); --tint-line: color-mix(in oklab, var(--brand) 22%, #2a2a31);
+  --night: #050506; --night-2: #111114; --night-line: #1f2025;
+  --code-bg: #08080a;
+  --shadow: 0 1px 2px rgb(0 0 0 / .4), 0 30px 60px -30px rgb(0 0 0 / .85);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.55; -webkit-font-smoothing: antialiased; overflow-x: clip; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--bg); }
+button, input { font: inherit; color: inherit; }
+a { color: inherit; }
+img { max-width: 100%; }
+:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; border-radius: 6px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip { position: absolute; left: 16px; top: -60px; z-index: 40; background: var(--ink); color: var(--bg); padding: 10px 14px; border-radius: 10px; text-decoration: none; }
+.skip:focus { top: calc(10px + env(safe-area-inset-top, 0px)); }
+.wrap {
+  width: 100%; max-width: 1264px; margin-inline: auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+@media (min-width: 700px) { .wrap { padding-left: max(32px, env(safe-area-inset-left, 0px)); padding-right: max(32px, env(safe-area-inset-right, 0px)); } }
+.ic { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- type ---------- */
+h1, h2, h3 { font-family: var(--display); font-weight: 650; letter-spacing: -.03em; text-wrap: balance; margin: 0; }
+h2 { font-size: clamp(2rem, 3.6vw, 3.1rem); line-height: 1.02; }
+h3 { font-size: 1.2rem; letter-spacing: -.015em; line-height: 1.2; }
+p { margin: 0; }
+.lede { color: var(--ink-2); font-size: 1.075rem; max-width: 52ch; text-wrap: pretty; }
+.label { font-family: var(--mono); font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+
+/* ---------- buttons ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  height: 48px; padding: 0 22px; border-radius: 12px; border: 1px solid transparent;
+  font-weight: 550; font-size: 15px; text-decoration: none; cursor: pointer; white-space: nowrap;
+  transition: transform .18s var(--ease), background .25s var(--ease), border-color .25s var(--ease), color .25s var(--ease);
+}
+.btn:active { transform: scale(.98); }
+.btn-ink { background: var(--ink); color: var(--bg); }
+.btn-ink:hover { background: var(--ink-2); }
+.btn-line { border-color: var(--line-2); background: color-mix(in srgb, var(--surface) 70%, transparent); color: var(--ink); backdrop-filter: blur(8px); }
+.btn-line:hover { border-color: var(--ink); }
+.btn .ic-swap { position: relative; width: 18px; height: 18px; overflow: hidden; }
+.btn .ic-swap .ic { position: absolute; inset: 0; transition: transform .45s var(--ease); }
+.btn .ic-swap .ic + .ic { transform: translate(-120%, 120%); }
+.btn:hover .ic-swap .ic:first-child { transform: translate(120%, -120%); }
+.btn:hover .ic-swap .ic + .ic { transform: none; }
+
+/* ---------- top bar ---------- */
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(16px) saturate(1.3); -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+}
+.top > .wrap { display: flex; align-items: center; gap: 10px; height: 64px; }
+.mark { display: inline-flex; align-items: center; gap: 9px; text-decoration: none; margin-right: auto; }
+.mark i { width: 28px; height: 28px; border-radius: 8px; background: var(--ink); display: grid; place-items: center; }
+.mark i::after { content: ""; border-left: 8px solid var(--bg); border-top: 5px solid transparent; border-bottom: 5px solid transparent; margin-left: 2px; }
+.mark b { font-family: var(--display); font-weight: 700; font-size: 18px; letter-spacing: -.02em; }
+.nav { display: flex; gap: 2px; }
+.nav a { text-decoration: none; color: var(--ink-2); font-size: 14.5px; padding: 8px 12px; border-radius: 9px; transition: background .2s, color .2s; }
+.nav a:hover { background: var(--sunk); color: var(--ink); }
+.icon-btn { width: 40px; height: 40px; border-radius: 11px; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; cursor: pointer; color: var(--ink-2); flex: none; }
+.icon-btn:hover { color: var(--ink); border-color: var(--line-2); }
+.icon-btn .moon { display: none; }
+:root[data-theme="dark"] .icon-btn .sun { display: none; }
+:root[data-theme="dark"] .icon-btn .moon { display: block; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .icon-btn .sun { display: none; } :root:not([data-theme="light"]) .icon-btn .moon { display: block; } }
+.top .btn { height: 40px; padding: 0 16px; font-size: 14px; border-radius: 11px; }
+.menu-btn { display: none; }
+.menu-btn .ic-x { display: none; }
+.menu-btn[aria-expanded="true"] .ic-x { display: block; }
+.menu-btn[aria-expanded="true"] .ic-m { display: none; }
+.mnav { border-top: 1px solid var(--line); background: var(--bg); }
+.mnav .wrap { display: flex; flex-direction: column; padding-block: 8px 18px; }
+.mnav a:not(.btn) { text-decoration: none; font-family: var(--display); font-size: 1.35rem; font-weight: 600; letter-spacing: -.02em; padding: 12px 0; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
+.mnav .btn { margin-top: 16px; }
+
+/* ---------- hero ---------- */
+.hero { position: relative; isolation: isolate; overflow: clip; padding-block: clamp(44px, 7vw, 92px) clamp(64px, 8vw, 112px); }
+.glow { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.glow::before, .glow::after { content: ""; position: absolute; border-radius: 50%; filter: blur(70px); }
+.glow::before {
+  width: 62vw; height: 62vw; max-width: 900px; max-height: 900px; right: -12vw; top: -22vw;
+  background: radial-gradient(closest-side, color-mix(in oklab, var(--brand) var(--glow-a), transparent), transparent);
+}
+.glow::after {
+  width: 48vw; height: 48vw; max-width: 720px; max-height: 720px; right: 18vw; top: 16vw;
+  background: radial-gradient(closest-side, color-mix(in oklab, var(--brand-2) var(--glow-b), transparent), transparent);
+}
+.grid-lines {
+  position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 64px 64px; background-position: center -1px;
+  mask-image: radial-gradient(70% 70% at 70% 30%, #000, transparent 75%); -webkit-mask-image: radial-gradient(70% 70% at 70% 30%, #000, transparent 75%);
+}
+.hero .wrap { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(32px, 5vw, 72px); align-items: center; }
+.hero-copy { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+.hero h1 { font-size: clamp(2.8rem, 5.6vw, 4.9rem); line-height: .96; letter-spacing: -.048em; }
+.hero h1 .focus { font-style: normal; font-weight: 300; letter-spacing: -.035em; }
+
+.badge-wrap { perspective: 700px; align-self: flex-start; }
+.badge {
+  display: inline-flex; align-items: center; gap: 10px; padding: 6px 12px 6px 6px; border-radius: 12px; text-decoration: none;
+  background: linear-gradient(180deg, var(--surface), color-mix(in srgb, var(--sunk) 70%, var(--surface)));
+  border: 1px solid var(--line-2); box-shadow: 0 1px 0 rgb(255 255 255 / .5) inset, 0 16px 24px -18px rgb(0 0 0 / .45);
+  font-size: 13.5px; color: var(--ink-2); position: relative; overflow: hidden;
+  transform: rotateX(16deg); transform-origin: 50% 100%; transition: transform .5s var(--ease), border-color .3s;
+}
+.badge:hover { transform: rotateX(0deg); border-color: var(--ink); }
+.badge .k { font-family: var(--mono); font-size: 11.5px; font-weight: 500; padding: 4px 7px; border-radius: 7px; background: var(--ink); color: var(--bg); }
+.badge .ic { width: 15px; height: 15px; }
+.badge::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / .55) 50%, transparent 70%); transform: translateX(-120%); }
+
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.file-label { position: relative; }
+.file-label input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+.file-label:focus-within { outline: 2px solid var(--ink); outline-offset: 3px; }
+.err { color: #c2410c; font-size: 14px; }
+.err:empty { display: none; }
+:root[data-theme="dark"] .err { color: #fb923c; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .err { color: #fb923c; } }
+
+.brands { display: flex; flex-direction: column; gap: 10px; }
+.brands-label { font-size: 13px; color: var(--muted); }
+.picker { display: flex; flex-wrap: wrap; gap: 8px; }
+.pick {
+  position: relative; display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px 0 6px;
+  border-radius: 10px; border: 1px solid var(--line); background: color-mix(in srgb, var(--surface) 80%, transparent); cursor: pointer; overflow: hidden;
+  font-size: 14px; color: var(--ink-2); transition: border-color .2s, color .2s;
+}
+.pick:hover { border-color: var(--line-2); color: var(--ink); }
+.pick[aria-checked="true"] { border-color: currentColor; color: var(--ink); }
+.pick img { width: 26px; height: 26px; object-fit: contain; border-radius: 6px; }
+.pick.wide img { width: 66px; background: var(--plate); padding: 3px 5px; }
+.pick .bar { position: absolute; left: 0; bottom: 0; height: 2px; width: 100%; background: var(--brand); transform-origin: left; transform: scaleX(0); }
+.cycling .pick[aria-checked="true"] .bar { animation: fill 5.2s linear forwards; }
+@keyframes fill { to { transform: scaleX(1); } }
+
+.stage { position: relative; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+.frame { position: relative; }
+.frame reskin-player { border-radius: 18px; box-shadow: var(--shadow); }
+.frame.swap { opacity: 0; transform: scale(.985); }
+.frame { transition: opacity .22s var(--ease), transform .5s var(--ease); }
+.pin {
+  position: absolute; z-index: 3; width: 26px; height: 26px; margin: -13px 0 0 -13px; border-radius: 50%;
+  display: grid; place-items: center; font-family: var(--mono); font-size: 12px; font-weight: 500;
+  background: var(--ink); color: var(--bg); box-shadow: 0 0 0 3px color-mix(in srgb, var(--bg) 70%, transparent), 0 6px 14px -6px rgb(0 0 0 / .6);
+  pointer-events: none; transition: left .5s var(--ease), top .5s var(--ease), opacity .3s;
+}
+.pin::after { content: ""; position: absolute; inset: -7px; border-radius: 50%; border: 1.5px solid var(--ink); opacity: 0; }
+.pin[hidden] { display: none; }
+
+.kit {
+  display: grid; grid-template-columns: auto auto minmax(0, 1fr); gap: 14px 22px; align-items: start;
+  padding: 16px 18px; border-radius: 16px; background: color-mix(in srgb, var(--surface) 82%, transparent);
+  border: 1px solid var(--line); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+}
+.kit-head { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.kit-head .label b { color: var(--ink); font-weight: 500; }
+.kit-cell { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.kit-cell .t { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--muted); }
+.kit-cell .t i { width: 18px; height: 18px; border-radius: 50%; background: var(--ink); color: var(--bg); font-style: normal; font-family: var(--mono); font-size: 10.5px; display: grid; place-items: center; }
+.kit-box { height: 54px; min-width: 54px; padding: 8px; border-radius: 11px; background: var(--plate); border: 1px solid var(--plate-line); display: grid; place-items: center; }
+.kit-box img { height: 38px; width: auto; max-width: 150px; object-fit: contain; display: block; }
+.kit-box.empty { font-size: 12px; color: #6b6b75; padding: 8px 12px; }
+.kit-colors { display: flex; gap: 6px; align-items: center; height: 54px; }
+.kit-colors span { width: 34px; height: 34px; border-radius: 9px; border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent); }
+.kit-note { grid-column: 1 / -1; font-size: 13.5px; color: var(--ink-2); border-top: 1px solid var(--line); padding-top: 12px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.switch { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink); cursor: pointer; }
+.switch input { appearance: none; width: 34px; height: 20px; border-radius: 999px; background: var(--line-2); position: relative; margin: 0; cursor: pointer; transition: background .25s; }
+.switch input::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform .3s var(--ease); box-shadow: 0 1px 2px rgb(0 0 0 / .3); }
+.switch input:checked { background: var(--ink); }
+.switch input:checked::after { transform: translateX(14px); }
+.switch input:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+/* ---------- bands ---------- */
+.band { padding-block: clamp(72px, 9vw, 120px); position: relative; }
+.band.paper { background: var(--surface); border-block: 1px solid var(--line); }
+.band.night { background: var(--night); color: var(--night-ink); --muted: var(--night-muted); --ink: var(--night-ink); --ink-2: #c6c6ce; --line: var(--night-line); --line-2: #3a3b43; --surface: var(--night-2); --sunk: #1d1e23; color-scheme: dark; }
+.band.tint { background: var(--tint-bg); color: var(--tint-ink); --ink: var(--tint-ink); --muted: var(--tint-muted); --line: var(--tint-line); transition: background .8s var(--ease); }
+.band.deep { background: var(--brand-deep); color: #f4f4f5; --ink: #f4f4f5; --ink-2: #d4d4da; --muted: #b3b3bd; --line: rgb(255 255 255 / .14); --line-2: rgb(255 255 255 / .28); --surface: rgb(255 255 255 / .06); --bg: var(--brand-deep); overflow: clip; isolation: isolate; color-scheme: dark; }
+.head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px 56px; align-items: end; margin-bottom: clamp(32px, 4.5vw, 56px); }
+.head .stack { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.head .side { display: flex; flex-direction: column; gap: 16px; align-items: flex-start; min-width: 0; }
+.picker.small .pick { height: 34px; font-size: 13px; }
+.picker.small .pick img { width: 22px; height: 22px; }
+.picker.small .pick.wide img { width: 58px; }
+
+/* stage plus thumbnails, shared by directions and presets */
+.viewer { display: grid; grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); gap: 24px; align-items: start; }
+.viewer .main { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.viewer .main reskin-player { border-radius: 16px; box-shadow: 0 40px 80px -40px rgb(0 0 0 / .7); }
+.now { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px 28px; flex-wrap: wrap; }
+.now h3 { font-size: 1.5rem; }
+.now p { color: var(--ink-2); font-size: 15.5px; max-width: 54ch; margin-top: 6px; }
+.text-link { display: inline-flex; align-items: center; gap: 6px; font-size: 14.5px; text-decoration: none; padding-bottom: 2px; border-bottom: 1px solid var(--line-2); white-space: nowrap; }
+.text-link:hover { border-color: currentColor; }
+.text-link .ic { width: 15px; height: 15px; }
+.rail { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.thumb {
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; text-align: left; padding: 10px; border-radius: 14px;
+  border: 1px solid var(--line); background: var(--surface); cursor: pointer; color: inherit; min-width: 0;
+  transition: border-color .25s var(--ease), background .25s var(--ease), transform .25s var(--ease);
+}
+.thumb:hover { border-color: var(--line-2); }
+.thumb[aria-pressed="true"] { border-color: var(--brand); box-shadow: 0 0 0 1px var(--brand); }
+.thumb:active { transform: scale(.985); }
+.mini { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 8px; overflow: hidden; pointer-events: none; }
+.mini reskin-player { position: absolute; left: 0; top: 0; width: 880px; transform-origin: 0 0; }
+.thumb .t { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.thumb b { font-family: var(--display); font-weight: 650; font-size: 1.05rem; letter-spacing: -.015em; }
+.thumb small { font-size: 13px; color: var(--muted); line-height: 1.4; }
+.thumb .mono { font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
+
+@media (min-width: 1041px) {
+  .rail .thumb { grid-template-columns: 148px minmax(0, 1fr); align-items: center; column-gap: 14px; }
+  .rail .thumb .mini { grid-row: span 2; }
+  .rail .thumb .t, .rail .thumb small { grid-column: 2; }
+  .rail .thumb small { align-self: start; }
+  .rail .thumb .t { align-self: end; }
+  .viewer .main { position: sticky; top: 88px; }
+}
+.presets-viewer { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.tiles .thumb { padding: 7px; gap: 7px; border-radius: 12px; }
+.tiles .thumb b { font-size: .92rem; }
+.tiles .mini { border-radius: 6px; }
+
+/* what the logo tells us */
+.read { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(28px, 5vw, 80px); align-items: start; }
+.specimen { border-radius: 24px; background: var(--bg); border: 1px solid var(--line); padding: clamp(18px, 3vw, 28px); display: flex; flex-direction: column; gap: 18px; }
+.logo-pair { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 10px; }
+.logo-box { aspect-ratio: 4 / 3; border-radius: 14px; background: var(--plate); display: grid; place-items: center; position: relative; overflow: hidden; }
+.logo-box::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(var(--plate-line) 1px, transparent 1px), linear-gradient(90deg, var(--plate-line) 1px, transparent 1px); background-size: 20px 20px; }
+.logo-box img { position: relative; max-width: 72%; max-height: 56%; object-fit: contain; }
+.logo-box figcaption { position: absolute; left: 10px; bottom: 8px; font-family: var(--mono); font-size: 11px; color: #6b6b75; }
+.logo-box.off img { opacity: .25; }
+.swatches { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.sw { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.sw i { display: block; height: 44px; border-radius: 10px; border: 1px solid color-mix(in srgb, var(--ink) 10%, transparent); }
+.sw span { font-family: var(--mono); font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 2px; }
+.sw b { font-weight: 500; color: var(--ink-2); }
+.rows { display: flex; flex-direction: column; }
+.row { display: grid; grid-template-columns: minmax(0, 10rem) minmax(0, 1fr) auto; gap: 8px 24px; align-items: baseline; padding-block: 18px; border-bottom: 1px solid var(--line); }
+.row:first-child { border-top: 1px solid var(--line); }
+.row .k { font-family: var(--mono); font-size: 12.5px; color: var(--muted); }
+.row .v { font-size: 16px; }
+.row .then { font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); padding: 4px 9px; border-radius: 8px; background: var(--sunk); white-space: nowrap; }
+
+/* code */
+.code-wrap { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: clamp(28px, 4vw, 56px); align-items: start; }
+.code-card { border-radius: 20px; background: var(--code-bg); color: var(--code-ink); overflow: hidden; border: 1px solid color-mix(in srgb, var(--ink) 8%, transparent); box-shadow: var(--shadow); }
+.code-bar { display: flex; align-items: center; gap: 8px; padding: 10px 10px 10px 14px; border-bottom: 1px solid rgb(255 255 255 / .08); }
+.code-bar .tabs { display: flex; gap: 2px; margin-right: auto; }
+.code-bar .tabs button { border: 0; background: transparent; color: var(--code-dim); height: 32px; padding: 0 12px; border-radius: 8px; cursor: pointer; font-size: 13.5px; }
+.code-bar .tabs button[aria-selected="true"] { background: rgb(255 255 255 / .09); color: var(--code-ink); }
+.copy { display: inline-flex; align-items: center; gap: 7px; height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid rgb(255 255 255 / .14); background: transparent; color: var(--code-ink); cursor: pointer; font-size: 13px; }
+.copy:hover { background: rgb(255 255 255 / .07); }
+.copy .ic { width: 15px; height: 15px; }
+pre { margin: 0; padding: 22px 20px 24px; overflow-x: auto; font-family: var(--mono); font-size: 13px; line-height: 1.75; }
+pre .t { color: var(--code-tag); } pre .a { color: var(--code-attr); } pre .s { color: var(--code-str); }
+.code-note { font-size: 14px; color: var(--code-dim); padding: 0 20px 20px; }
+.anatomy { display: flex; flex-direction: column; gap: 16px; }
+.parts { display: flex; flex-wrap: wrap; gap: 6px; }
+.part { display: inline-flex; flex-direction: column; gap: 4px; padding: 8px 10px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); }
+.part code { font-family: var(--mono); font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
+.part code i { width: 10px; height: 10px; border-radius: 3px; border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent); }
+.part span { font-size: 11.5px; color: var(--muted); }
+
+/* player features */
+.feat { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: clamp(28px, 5vw, 80px); align-items: start; }
+.feat .row { grid-template-columns: minmax(0, 1fr); }
+.feat .row h3 { font-size: 1.15rem; }
+.feat .row p { color: var(--ink-2); font-size: 15px; max-width: 56ch; }
+.keys { border-radius: 24px; background: var(--bg); border: 1px solid var(--line); padding: clamp(20px, 3vw, 32px); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px; }
+.keys h3 { grid-column: 1 / -1; font-size: 1.05rem; }
+.key { display: flex; align-items: center; gap: 12px; font-size: 14.5px; color: var(--ink-2); min-width: 0; }
+kbd { font-family: var(--mono); font-size: 12.5px; color: var(--ink); min-width: 38px; height: 34px; padding: 0 9px; display: inline-grid; place-items: center; border-radius: 9px; background: var(--surface); border: 1px solid var(--line-2); box-shadow: inset 0 -2px 0 var(--line-2); }
+
+/* closing */
+.band.deep .glow::before { right: auto; left: -14vw; top: -30vw; }
+.band.deep .glow::after { right: -10vw; top: 6vw; }
+.close-in { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 28px; align-items: end; }
+.close-in h2 { font-size: clamp(2.3rem, 4.8vw, 4rem); max-width: 15ch; }
+.band.deep .btn-ink { background: #f4f4f5; color: #141418; }
+.band.deep .btn-ink:hover { background: #ffffff; }
+.band.deep .btn-line { color: #f4f4f5; border-color: rgb(255 255 255 / .3); background: transparent; }
+.band.deep .btn-line:hover { border-color: #fff; }
+footer { padding-block: 26px 36px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; justify-content: space-between; }
+
+/* light and dark: one skin, compared with a handle */
+.compare { position: relative; border-radius: 18px; overflow: hidden; box-shadow: var(--shadow); --pos: 50%; touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: ew-resize; }
+.cmp-layer reskin-player { display: block; }
+.cmp-layer { pointer-events: none; }
+.cmp-light { position: absolute; inset: 0; clip-path: inset(0 calc(100% - var(--pos)) 0 0); }
+.cmp-handle { position: absolute; top: 0; bottom: 0; left: var(--pos); width: 2px; margin-left: -1px; background: #ffffff; box-shadow: 0 0 0 1px rgb(0 0 0 / .2); z-index: 3; pointer-events: none; }
+.cmp-handle span { position: absolute; top: 28%; left: 50%; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; background: #ffffff; color: #141418; display: grid; place-items: center; box-shadow: 0 8px 20px -8px rgb(0 0 0 / .6); transition: transform .25s var(--ease); }
+.compare:hover .cmp-handle span { transform: scale(1.06); }
+.cmp-range:focus-visible ~ .cmp-handle span { outline: 3px solid var(--brand); outline-offset: 3px; }
+.cmp-tag { position: absolute; top: 14px; z-index: 3; font-family: var(--mono); font-size: 12px; padding: 5px 10px; border-radius: 8px; background: rgb(10 10 12 / .6); color: #ffffff; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); pointer-events: none; }
+.cmp-tag.l { left: 14px; } .cmp-tag.d { right: 14px; }
+.modes-key { display: flex; flex-wrap: wrap; gap: 10px 28px; margin-top: 22px; color: var(--ink-2); font-size: 15px; }
+.modes-key span { display: inline-flex; align-items: center; gap: 10px; }
+.modes-key code { font-family: var(--mono); font-size: 13px; padding: 3px 8px; border-radius: 7px; background: var(--sunk); border: 1px solid var(--line); color: var(--ink); }
+.modes-key .now { color: var(--muted); }
+.cc-stage { border-radius: 18px; padding: 14px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); }
+.cc-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 2px 4px 14px; }
+.cc-bar .label { color: var(--muted); }
+.cc-langs { display: inline-flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--sunk); border: 1px solid var(--line); }
+.cc-langs button { height: 32px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: var(--ink-2); font: inherit; font-size: 14px; cursor: pointer; transition: background .2s var(--ease), color .2s var(--ease); }
+.cc-langs button:hover { color: var(--ink); }
+.cc-langs button[aria-pressed="true"] { background: #f4f4f5; color: #141418; }
+.cc-langs button:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.cc-points { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin-top: 28px; }
+.cc-points div { display: flex; gap: 14px; align-items: flex-start; min-width: 0; }
+.cc-points .ic-b { flex: none; width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; background: var(--sunk); border: 1px solid var(--line); color: var(--ink); }
+.cc-points b { display: block; font-weight: 600; font-size: 15.5px; margin-bottom: 2px; }
+.cc-points span { color: var(--ink-2); font-size: 14.5px; line-height: 1.5; }
+@media (max-width: 860px) { .cc-points { grid-template-columns: 1fr; gap: 16px; } .cc-stage { padding: 10px; } }
+
+/* ---------- motion ---------- */
+.split .w { display: inline-block; }
+.frame .pin { transition: left .5s var(--ease), top .5s var(--ease), opacity .35s var(--ease), transform .35s var(--ease); }
+.frame.playing .pin { opacity: 0; transform: scale(.6); }
+.hint { font-size: 13px; color: var(--muted); margin-top: -10px; }
+@media (prefers-reduced-motion: no-preference) {
+  .ld { animation: ld .9s var(--ease) both; animation-delay: calc(var(--d, 0) * 1ms); }
+  .split .w {
+    opacity: 0; filter: blur(14px); transform: translateY(.22em);
+    transition: opacity .7s var(--ease), filter .9s var(--ease), transform .9s var(--ease);
+    transition-delay: calc(var(--w) * 60ms);
+  }
+  .split.in .w { opacity: 1; filter: blur(0); transform: none; }
+  .hero h1.split .focus .w { filter: blur(22px); transition-duration: 1s, 1.5s, 1.2s; transition-delay: calc(var(--w) * 60ms + 220ms); }
+  .hero h1.split.in .focus .w { filter: blur(0); }
+  .badge::after { animation: sheen 1.6s 1s var(--ease) both; }
+  .glow::before { animation: float-a 18s ease-in-out infinite alternate; }
+  .glow::after { animation: float-b 22s ease-in-out infinite alternate; }
+  .pin::after { animation: ring 2.4s var(--ease) infinite; }
+  @supports (animation-timeline: view()) {
+    .rv {
+      animation: rv-in linear both, rv-out linear both;
+      animation-timeline: view(), view();
+      animation-range: entry calc(var(--i, 0) * 6%) entry calc(75% + var(--i, 0) * 6%), exit 30% exit 100%;
+    }
+    .px { animation: px linear both; animation-timeline: view(); animation-range: cover; }
+    .grid-lines { animation: drift linear both; animation-timeline: scroll(root block); animation-range: 0 800px; }
+  }
+}
+@keyframes ld { from { opacity: 0; transform: translateY(18px); } }
+@keyframes sheen { to { transform: translateX(120%); } }
+@keyframes float-a { to { transform: translate(-6vw, 4vw) scale(1.08); } }
+@keyframes float-b { to { transform: translate(5vw, -3vw) scale(.94); } }
+@keyframes ring { 0% { opacity: .6; transform: scale(.7); } 80%, 100% { opacity: 0; transform: scale(1.35); } }
+@keyframes rv-in { from { opacity: 0; transform: translateY(40px) scale(.955); } }
+@keyframes rv-out { to { opacity: 0; transform: translateY(-24px) scale(.97); } }
+@keyframes px { from { translate: 0 calc(var(--px, 20) * 1px); } to { translate: 0 calc(var(--px, 20) * -1px); } }
+@keyframes drift { to { background-position: center -120px; } }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .frame { transition: none; } .badge { transform: none; } }
+
+/* ---------- responsive ---------- */
+@media (max-width: 1040px) {
+  .nav, .top .theme-desktop { display: none; }
+  .menu-btn { display: grid; }
+  .presets-viewer, .viewer { grid-template-columns: minmax(0, 1fr); }
+  .rail { flex-direction: row; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 6px; scrollbar-width: thin; }
+  .rail .thumb { flex: 0 0 min(300px, 74%); scroll-snap-align: start; }
+  .tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 860px) {
+  .hero .wrap, .read, .code-wrap, .feat, .head, .close-in { grid-template-columns: minmax(0, 1fr); }
+  .row { grid-template-columns: minmax(0, 1fr) auto; }
+  .row .k { grid-column: 1 / -1; }
+  .hero .stage { order: 2; }
+}
+@media (max-width: 600px) {
+  .top .btn-studio { display: none; }
+  .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kit { grid-template-columns: auto minmax(0, 1fr); }
+  .kit .kit-cell.colors { grid-column: 1 / -1; }
+  .keys { grid-template-columns: minmax(0, 1fr); }
+  .pin { width: 22px; height: 22px; margin: -11px 0 0 -11px; font-size: 11px; }
+  /* phones: the big players get a taller box (the video sits inside with a soft blurred fill), so the controls never cover most of the picture */
+  .frame reskin-player .rs-player, .viewer .main reskin-player .rs-player, .compare reskin-player .rs-player { aspect-ratio: 1 / 1; }
+}
+</style>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="top">
+  <div class="wrap">
+    <a class="mark" href="#top" aria-label="Reskin, back to top"><i aria-hidden="true"></i><b>Reskin</b></a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#directions">Directions</a>
+      <a href="#read">How it reads</a>
+      <a href="#presets">Presets</a>
+      <a href="#code">Code</a>
+    </nav>
+    <button class="icon-btn theme-btn" type="button" aria-label="Switch light or dark">
+      <svg class="ic sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 3v1.5M12 19.5V21M3 12h1.5M19.5 12H21M5.6 5.6l1.1 1.1M17.3 17.3l1.1 1.1M5.6 18.4l1.1-1.1M17.3 6.7l1.1-1.1"/></svg>
+      <svg class="ic moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+    </button>
+    <a class="btn btn-ink btn-studio studio-link" href="studio.html">Open the studio</a>
+    <button class="icon-btn menu-btn" type="button" id="menuBtn" aria-expanded="false" aria-controls="mnav" aria-label="Menu">
+      <svg class="ic ic-m" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16M4 16h16"/></svg>
+      <svg class="ic ic-x" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+  </div>
+  <div class="mnav" id="mnav" hidden>
+    <div class="wrap">
+      <a href="#directions">Directions<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+      <a href="#read">How it reads<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+      <a href="#presets">Presets<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+      <a href="#code">Code<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+      <a class="btn btn-ink studio-link" href="studio.html">Open the studio</a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero" id="top" aria-labelledby="h1">
+    <div class="glow" aria-hidden="true"></div>
+    <div class="grid-lines" aria-hidden="true"></div>
+    <div class="wrap">
+      <div class="hero-copy">
+        <div class="badge-wrap ld" style="--d: 0">
+          <a class="badge" href="#code"><span class="k">Video.js v10</span>Free and open source skins<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+        <h1 id="h1" class="split-me">Upload your brand. Get a player that <em class="focus">wears it.</em></h1>
+        <p class="lede ld" style="--d: 260">Reskin picks up your colors, places your logo, and hands the small jobs to your symbol, like the handle on the scrubber, where a long wordmark would never fit. Two lines of code put it on your site.</p>
+        <div class="actions ld" style="--d: 360">
+          <label class="btn btn-ink file-label">
+            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+            Upload your logo
+            <input type="file" id="logoFile" accept="image/png,image/svg+xml,image/jpeg,image/webp" aria-label="Upload your logo">
+          </label>
+          <a class="btn btn-line studio-link" href="studio.html">Open the studio
+            <span class="ic-swap" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="M7 17 17 7M8.5 7H17v8.5"/></svg><svg class="ic" viewBox="0 0 24 24"><path d="M7 17 17 7M8.5 7H17v8.5"/></svg></span>
+          </a>
+        </div>
+        <p class="hint ld" style="--d: 400">SVG, PNG or JPG. A wordmark gets its symbol cut out for you.</p>
+        <p class="err" id="err" role="alert"></p>
+        <div class="brands ld" style="--d: 460">
+          <span class="brands-label" id="brandsLabel">No logo handy? Try one of these brands.</span>
+          <div class="picker cycling" role="radiogroup" aria-labelledby="brandsLabel" data-picker data-hero></div>
+        </div>
+      </div>
+      <div class="stage ld" style="--d: 200">
+        <div class="frame" id="heroFrame">
+          <reskin-player id="heroPlayer"></reskin-player>
+          <span class="pin" data-pin="1" aria-hidden="true">1</span>
+          <span class="pin" data-pin="2" aria-hidden="true">2</span>
+          <span class="pin" data-pin="3" aria-hidden="true">3</span>
+        </div>
+        <div class="kit" aria-live="polite">
+          <div class="kit-head"><span class="label">Picked up from <b id="kitName">Halcyon</b></span></div>
+          <div class="kit-cell"><span class="t"><i>2</i>Logo</span><div class="kit-box"><img id="kitLogo" alt="" src=""></div></div>
+          <div class="kit-cell"><span class="t"><i>3</i>Symbol</span><div class="kit-box" id="kitSymBox"><img id="kitSym" alt="" src=""></div></div>
+          <div class="kit-cell colors"><span class="t"><i>1</i>Colors</span><div class="kit-colors" id="kitColors"></div></div>
+          <div class="kit-note"><span id="kitNote"></span>
+            <label class="switch" id="symSwitch" hidden><input type="checkbox" id="symToggle" checked>Use the symbol</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band night" id="directions" aria-labelledby="dirH">
+    <div class="wrap">
+      <div class="head">
+        <div class="stack">
+          <span class="label rv">Directions</span>
+          <h2 id="dirH" class="split-me px" style="--px: 14">Three places your logo can live.</h2>
+        </div>
+        <div class="side">
+          <p class="lede rv" style="--i: 1">Pick a direction to see it full size. Each one is a starting point you can fine tune in the studio.</p>
+        </div>
+      </div>
+      <div class="viewer">
+        <div class="main rv">
+          <reskin-player id="dirStage"></reskin-player>
+          <div class="now">
+            <div><h3 id="dirName">Mark</h3><p id="dirDesc"></p></div>
+            <a class="text-link studio-stage" id="dirEdit" href="studio.html">Open in the studio<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8.5 7H17v8.5"/></svg></a>
+          </div>
+        </div>
+        <div class="rail rv" style="--i: 1" id="dirRail" role="group" aria-label="Directions"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band paper" id="read" aria-labelledby="readH">
+    <div class="wrap read">
+      <div class="specimen rv">
+        <div class="logo-pair">
+          <figure class="logo-box" style="margin: 0"><img id="readLogo" alt="" src=""><figcaption>logo</figcaption></figure>
+          <figure class="logo-box" id="readSymBox" style="margin: 0"><img id="readSym" alt="" src=""><figcaption>symbol</figcaption></figure>
+        </div>
+        <div class="swatches" id="swatches"></div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 28px; min-width: 0;">
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <span class="label rv">How it reads a brand</span>
+          <h2 id="readH" class="split-me">Everything comes from the logo you already have.</h2>
+          <p class="lede rv" style="--i: 1">No brand guide needed. Reskin looks at the file in your browser, nothing is uploaded, and turns what it sees into settings you can change later.</p>
+        </div>
+        <div class="rows" id="readRows"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="modes" aria-labelledby="modeH">
+    <div class="wrap">
+      <div class="head">
+        <div class="stack">
+          <span class="label rv">Light and dark</span>
+          <h2 id="modeH" class="split-me px" style="--px: 14">One skin, light and dark.</h2>
+        </div>
+        <p class="lede rv" style="--i: 1">Every skin carries both palettes. Pin light or dark, or pick Auto and the player follows each viewer's device setting. Drag the handle to compare.</p>
+      </div>
+      <div class="compare rv" id="compare">
+        <div class="cmp-layer cmp-dark" inert><reskin-player id="cmpDark"></reskin-player></div>
+        <div class="cmp-layer cmp-light" inert><reskin-player id="cmpLight"></reskin-player></div>
+        <span class="cmp-tag l" aria-hidden="true">Light</span><span class="cmp-tag d" aria-hidden="true">Dark</span>
+        <input type="range" class="cmp-range sr-only" id="cmpRange" min="0" max="100" value="50" aria-label="Compare the light and dark player. Higher shows more of the light one.">
+        <div class="cmp-handle" aria-hidden="true"><span><svg class="ic" viewBox="0 0 24 24"><path d="M9 7l-5 5 5 5M15 7l5 5-5 5"/></svg></span></div>
+      </div>
+      <div class="modes-key rv" style="--i: 1">
+        <span><code>l</code>Light, always</span>
+        <span><code>d</code>Dark, always</span>
+        <span><code>a</code>Auto, follows the viewer<span class="now" id="modeNow"></span></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="band tint" id="presets" aria-labelledby="preH">
+    <div class="wrap">
+      <div class="head">
+        <div class="stack">
+          <span class="label rv">Presets</span>
+          <h2 id="preH" class="split-me px" style="--px: 14">Twelve presets, already in your colors.</h2>
+        </div>
+        <div class="side">
+          <p class="lede rv" style="--i: 1">Pick a preset to see it full size and press play. The brand below decides the colors.</p>
+          <div class="picker small rv" style="--i: 2" role="radiogroup" aria-label="Brand on show" data-picker></div>
+        </div>
+      </div>
+      <div class="viewer presets-viewer">
+        <div class="main rv">
+          <reskin-player id="preStage"></reskin-player>
+          <div class="now">
+            <div><h3 id="preName">Glass</h3><p id="preDesc"></p></div>
+            <a class="text-link studio-stage" id="preEdit" href="studio.html">Edit this preset<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8.5 7H17v8.5"/></svg></a>
+          </div>
+        </div>
+        <div class="tiles rv" style="--i: 1" id="preTiles" role="group" aria-label="Presets"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="code" aria-labelledby="codeH">
+    <div class="wrap">
+      <div class="head">
+        <div class="stack">
+          <span class="label rv">On your site</span>
+          <h2 id="codeH" class="split-me px" style="--px: 14">Two lines, and it is live.</h2>
+        </div>
+        <p class="lede rv" style="--i: 1">Paste the two lines into any page, or use the embed link in a site builder. Your video can be a file link, or an upload that Mux hosts and captions for you.</p>
+      </div>
+      <div class="code-wrap">
+        <div class="code-card rv">
+          <div class="code-bar">
+            <div class="tabs" role="tablist" aria-label="Code format">
+              <button type="button" role="tab" id="tabSite" aria-selected="true" aria-controls="codeOut">Website</button>
+              <button type="button" role="tab" id="tabEmbed" aria-selected="false" aria-controls="codeOut">Embed</button>
+            </div>
+            <button type="button" class="copy" id="copyBtn"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg><span>Copy</span></button>
+          </div>
+          <pre id="codeOut" role="tabpanel" tabindex="0"></pre>
+          <p class="code-note" id="codeNote"></p>
+        </div>
+        <div class="anatomy rv" style="--i: 1">
+          <h3>Every setting lives in the theme code.</h3>
+          <p class="lede" style="font-size: 15.5px;">No account and no database. The code carries the preset, the colors, the type and the switches, so the link alone rebuilds the skin.</p>
+          <div class="parts" id="parts"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band night" id="captions" aria-labelledby="capH">
+    <div class="wrap">
+      <div class="head">
+        <div class="stack">
+          <span class="label rv">Captions, chapters, transcript</span>
+          <h2 id="capH" class="split-me px" style="--px: 14">The words come with the video.</h2>
+        </div>
+        <p class="lede rv" style="--i: 1">Mux writes the captions when you upload. The player turns them into subtitles, chapters and a live transcript.</p>
+      </div>
+      <div class="cc-stage rv">
+        <div class="cc-bar">
+          <span class="label">Switch the language</span>
+          <div class="cc-langs" role="group" aria-label="Caption language">
+            <button type="button" data-lang="en" aria-pressed="true">English</button>
+            <button type="button" data-lang="ar" aria-pressed="false" lang="ar">العربية</button>
+            <button type="button" data-lang="fr" aria-pressed="false" lang="fr">Français</button>
+          </div>
+        </div>
+        <reskin-player id="ccPlayer"></reskin-player>
+      </div>
+      <div class="cc-points">
+        <div class="rv"><span class="ic-b" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M7 15h4M13 15h4M7 11h10"/></svg></span><p><b>Auto captions</b><span>Mux transcribes the speech on upload.</span></p></div>
+        <div class="rv" style="--i: 1"><span class="ic-b" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></span><p><b>Any language</b><span>Add one file per language, or let Mux translate.</span></p></div>
+        <div class="rv" style="--i: 2"><span class="ic-b" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h13"/></svg></span><p><b>Chapters and transcript</b><span>Follows the speech. Click a line to jump.</span></p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band paper" aria-labelledby="featH">
+    <div class="wrap feat">
+      <div style="display: flex; flex-direction: column; gap: 28px; min-width: 0;">
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <span class="label rv">The player</span>
+          <h2 id="featH" class="split-me">Made for watching, not only for looking at.</h2>
+        </div>
+        <div class="rows">
+          <div class="row rv"><h3>Captions and a transcript that follows along</h3><p>Pick a language from the menu. The transcript scrolls with the video and jumps to any line you click.</p></div>
+          <div class="row rv"><h3>Chapters and scrub previews</h3><p>Chapter marks sit on the timeline, and a thumbnail follows your pointer while you scrub.</p></div>
+          <div class="row rv"><h3>Light, dark, or the viewer's setting</h3><p>Each skin carries both palettes, and the text is checked for contrast against its background.</p></div>
+          <div class="row rv"><h3>Any logo file, wordmark or symbol</h3><p>Upload an SVG or a PNG. Long wordmarks get their symbol cut out for the small controls, and dark logos sit on a white plate so they never disappear.</p></div>
+          <div class="row rv"><h3>Upload once, Mux does the rest</h3><p>Upload a video in the studio. Mux hosts it, writes the captions and makes the scrub thumbnails.</p></div>
+        </div>
+      </div>
+      <div class="keys rv" style="--i: 1">
+        <h3>Every control works from the keyboard</h3>
+        <div class="key"><kbd>Space</kbd>Play and pause</div>
+        <div class="key"><kbd>M</kbd>Mute</div>
+        <div class="key"><kbd><span aria-hidden="true">&larr;</span><span class="sr-only">Left arrow</span></kbd>Back 5 seconds</div>
+        <div class="key"><kbd><span aria-hidden="true">&rarr;</span><span class="sr-only">Right arrow</span></kbd>Forward 5 seconds</div>
+        <div class="key"><kbd>C</kbd>Captions on or off</div>
+        <div class="key"><kbd>F</kbd>Full screen</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band deep" aria-labelledby="closeH">
+    <div class="glow" aria-hidden="true"></div>
+    <div class="wrap close-in">
+      <h2 id="closeH" class="split-me">Your brand is ready when you are.</h2>
+      <div class="actions rv" style="--i: 1">
+        <a class="btn btn-ink studio-link" href="studio.html">Open the studio
+          <span class="ic-swap" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="M7 17 17 7M8.5 7H17v8.5"/></svg><svg class="ic" viewBox="0 0 24 24"><path d="M7 17 17 7M8.5 7H17v8.5"/></svg></span>
+        </a>
+        <a class="btn btn-line" href="#top">Upload your logo</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Reskin is free and open source under Apache-2.0.</span>
+    <span>Built on Video.js v10. Video hosting and captions by Mux.</span>
+  </div>
+</footer>
+<p class="sr-only" aria-live="polite" id="live"></p>
+
+<script src="reskin.js"></script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const SITE = /claude\.ai|claudeusercontent|anthropic/.test(location.hostname) || location.protocol === "file:" ? "https://reskin.vercel.app" : location.origin;
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const SAMPLES = [
+    { name: "Halcyon", svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" rx="28" fill="#0b2230"/><circle cx="60" cy="60" r="34" fill="#13a3a0"/><path d="M22 66c12-10 24-10 38 0s26 10 38 0v28H22z" fill="#ff7a59"/></svg>' },
+    { name: "Pollen", svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" rx="60" fill="#f6c700"/><path d="M60 26l29 17v34L60 94 31 77V43z" fill="#151515"/><path d="M60 44l14 8v16l-14 8-14-8V52z" fill="#f6c700"/></svg>' },
+    { name: "Fernway", svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80"><path d="M14 66c6-26 22-44 46-52-8 14-10 30-6 46-12-4-26-2-40 6z" fill="#2f9e5b"/><path d="M30 60c8-12 18-20 30-24" stroke="#f3efe2" stroke-width="3" fill="none" stroke-linecap="round"/><text x="86" y="56" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="40" letter-spacing="1" fill="#1d3b2a">FERNWAY</text></svg>' },
+    { name: "Nightjar", svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" rx="24" fill="#161a3f"/><path d="M22 78c20-6 34-24 38-48 4 24 18 42 38 48-20 2-30 8-38 18-8-10-18-16-38-18z" fill="#e8467f"/><circle cx="84" cy="34" r="8" fill="#bfb2ff"/></svg>' }
+  ].map(s => ({ name: s.name, url: "data:image/svg+xml;charset=utf-8," + encodeURIComponent(s.svg) }));
+
+  const VIDEOS = {
+    film:   { src: "demo.mp4", poster: "poster.jpg", thumbs: "film-thumbs.txt", ch: "film-chapters.txt", caps: "film-captions.txt|en|English, film-captions-ar.txt|ar|العربية, film-captions-fr.txt|fr|Français" },
+    talk:   { src: "podcast.mp4", poster: "podcast-poster.jpg", thumbs: "talk-thumbs.txt", ch: "podcast-chapters.txt", caps: "podcast-captions.txt|en|English, talk-captions-ar.txt|ar|العربية, talk-captions-fr.txt|fr|Français" },
+    teaser: { src: "teaser.mp4", poster: "teaser-poster.jpg", thumbs: "teaser-thumbs.txt", ch: "teaser-chapters.txt", caps: "teaser-captions.txt|en|English, teaser-captions-ar.txt|ar|العربية, teaser-captions-fr.txt|fr|Français" }
+  };
+  const DIRS = [
+    { id: "mark", name: "Mark", line: "Logo on the controls", desc: "Your logo sits on the play button. The symbol rides the scrubber and turns while the video loads." },
+    { id: "pattern", name: "Pattern", line: "Logo as texture", desc: "Your logo becomes a quiet texture on the control bar and the menus, so the brand is there without shouting." },
+    { id: "signature", name: "Signature", line: "Logo as shape", desc: "No logo on the controls. The player takes your logo's corners, line weight and type instead." }
+  ];
+  const PRESET_LINE = {
+    minimal: "Thin bar and quiet controls that stay out of the picture.", flat: "Solid blocks of color and no shadows.", glass: "A frosted bar that lets the picture show through.",
+    brutal: "Thick outlines and a hard shadow.", retro: "Tape deck counters and scan lines.", soft: "Rounded, padded and friendly.",
+    cinema: "Letterbox calm with serif type.", pill: "A floating dock of round buttons.", terminal: "A monospace console with a blinking cursor.",
+    outline: "Line work only, nothing filled.", broadcast: "Lower third bar with a live tag feel.", editorial: "Magazine margins and fine rules."
+  };
+  const ICON_NAMES = { lucide: "Lucide", phosphor: "Phosphor", phosphorFill: "Phosphor Fill", tabler: "Tabler" };
+  const FONT_NAMES = { sans: "DM Sans", rounded: "Nunito", serif: "Fraunces", mono: "JetBrains Mono" };
+
+  const brands = [];
+  let cur = 0, dirSel = "mark", preSel = "glass", useSym = true;
+  let cycleTimer = null, cycling = !reduce, belowDirty = false;
+  let codeTab = "site";
+
+  const pageMode = () => {
+    const t = document.documentElement.getAttribute("data-theme");
+    return t ? t : (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  };
+  const say = t => { $("live").textContent = t; };
+  const B = () => brands[cur];
+  const lookFor = (dir, preset, mode) => B().res.look(dir, preset || "", mode || pageMode(), useSym);
+
+  /* a player keeps playing (and its time) when its skin changes */
+  function setPlayer(el, look, video, live) {
+    const b = B(), v = VIDEOS[video];
+    const old = el.querySelector("video");
+    const wasPlaying = old && !old.paused, t = old ? old.currentTime : 0;
+    const attrs = { theme: look.theme, logo: b.url, symbol: look.symbol, poster: v.poster };
+    if (live) Object.assign(attrs, { src: v.src, captions: v.caps, chapters: v.ch, thumbnails: v.thumbs });
+    let changed = false;
+    for (const [k, val] of Object.entries(attrs)) if ((el.getAttribute(k) || "") !== (val || "")) { el.setAttribute(k, val || ""); changed = true; }
+    if (changed && live && (wasPlaying || t > 0)) queueMicrotask(() => {
+      const nv = el.querySelector("video");
+      if (!nv) return;
+      nv.addEventListener("loadedmetadata", () => { nv.currentTime = t; if (wasPlaying) { const p = nv.play(); if (p && p.catch) p.catch(() => {}); } }, { once: true });
+    });
+  }
+
+  /* ---------- page colors follow the brand ---------- */
+  function paintVars() {
+    const r = B().res.roles, s = document.documentElement.style;
+    s.setProperty("--brand", r.accent); s.setProperty("--brand-2", r.bar); s.setProperty("--brand-deep", r.surface);
+  }
+
+  /* ---------- brand pickers ---------- */
+  function renderPickers() {
+    document.querySelectorAll("[data-picker]").forEach(box => {
+      box.innerHTML = "";
+      brands.forEach((b, i) => {
+        const btn = document.createElement("button");
+        btn.type = "button"; btn.className = "pick" + (b.wide ? " wide" : "");
+        btn.setAttribute("role", "radio");
+        btn.innerHTML = `<img alt="" src="${b.url}"><span></span><i class="bar" aria-hidden="true"></i>`;
+        btn.querySelector("span").textContent = b.name;
+        btn.addEventListener("click", () => choose(i, true));
+        box.appendChild(btn);
+      });
+    });
+    syncPickers();
+  }
+  function syncPickers() {
+    document.querySelectorAll("[data-picker]").forEach(box => [...box.children].forEach((btn, i) => {
+      btn.setAttribute("aria-checked", i === cur ? "true" : "false");
+      btn.tabIndex = i === cur ? 0 : -1;
+      const bar = btn.querySelector(".bar");
+      if (bar) { bar.style.animation = "none"; void bar.offsetWidth; bar.style.animation = ""; }
+    }));
+  }
+  document.addEventListener("keydown", e => {
+    const btn = e.target.closest && e.target.closest(".pick");
+    if (!btn || !["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp"].includes(e.key)) return;
+    e.preventDefault();
+    const list = [...btn.parentElement.children], i = list.indexOf(btn);
+    const n = (i + (e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : -1) + list.length) % list.length;
+    choose(n, true); list[n].focus();
+  });
+
+  /* ---------- hero ---------- */
+  function placePins() {
+    const frame = $("heroFrame"), fr = frame.getBoundingClientRect(), p = $("heroPlayer");
+    const at = (n, el, fx = .5, fy = .5, dx = 0, dy = 0) => {
+      const pin = frame.querySelector(`[data-pin="${n}"]`);
+      if (!el) { pin.hidden = true; return; }
+      const r = el.getBoundingClientRect();
+      if (!r.width && !r.height) { pin.hidden = true; return; }
+      pin.hidden = false;
+      pin.style.left = (r.left - fr.left + r.width * fx + dx) + "px";
+      pin.style.top = (r.top - fr.top + r.height * fy + dy) + "px";
+    };
+    at(1, p.querySelector(".rs-controls"), .62, 0, 0, -16);
+    at(2, p.querySelector(".rs-logo") || p.querySelector(".rs-big"), 0, 1, -8, 8);
+    const thumb = p.querySelector(".rs-thumb");
+    const tr = thumb && thumb.getBoundingClientRect();
+    at(3, tr && tr.width > 4 ? thumb : p.querySelector(".rs-big"), .5, 0, 0, -18);
+  }
+  const pinsSoon = () => [80, 300, 800].forEach(ms => setTimeout(placePins, ms));
+  addEventListener("resize", () => requestAnimationFrame(placePins));
+
+  function paintKit() {
+    const b = B(), r = b.res.roles, look = lookFor("mark");
+    $("kitName").textContent = b.name;
+    $("kitLogo").src = b.url; $("kitLogo").alt = b.name + " logo";
+    const sym = b.wide ? (useSym && b.res.symbol ? b.res.symbol : "") : b.url;
+    $("kitSymBox").classList.toggle("empty", !sym);
+    $("kitSymBox").innerHTML = sym ? `<img alt="${b.name} symbol" src="${sym}">` : "Wordmark only";
+    $("kitColors").innerHTML = [r.accent, r.bar, r.surface].map(h => `<span style="background:${h}" title="${h}"></span>`).join("");
+    $("kitNote").textContent = b.wide
+      ? (useSym ? "A wordmark. The full logo stays on the play button and in the corner, the symbol takes the scrubber handle and the loader." : "A wordmark only. It rides a capsule on the play button and the scrubber gets a plain handle.")
+      : "A compact mark. It works on every control as it is.";
+    $("symSwitch").hidden = !(b.wide && b.res.symbol);
+    $("symToggle").checked = useSym;
+    return look;
+  }
+
+  function paintHero(animate) {
+    const frame = $("heroFrame");
+    const apply = () => {
+      setPlayer($("heroPlayer"), lookFor("mark"), "film", true);
+      paintKit(); paintVars(); updateStudioLinks(); pinsSoon();
+    };
+    if (animate && !reduce) {
+      frame.classList.add("swap");
+      setTimeout(() => { apply(); requestAnimationFrame(() => requestAnimationFrame(() => frame.classList.remove("swap"))); }, 230);
+    } else apply();
+    syncPickers();
+  }
+  $("symToggle").addEventListener("change", e => { useSym = e.target.checked; paintHero(false); paintBelow(); });
+
+  function startCycle() {
+    if (!cycling) return;
+    clearInterval(cycleTimer);
+    cycleTimer = setInterval(() => {
+      const v = $("heroPlayer").querySelector("video");
+      if (v && !v.paused) return stopCycle();
+      cur = (cur + 1) % SAMPLES.length;
+      belowDirty = true;
+      paintHero(true);
+    }, 5200);
+  }
+  function stopCycle() {
+    if (!cycling) return;
+    cycling = false; clearInterval(cycleTimer);
+    document.querySelector("[data-hero]").classList.remove("cycling");
+    if (belowDirty) paintBelow();
+  }
+  ["pointerdown", "focusin"].forEach(ev => $("heroFrame").addEventListener(ev, stopCycle));
+  new IntersectionObserver(es => es.forEach(en => { if (!en.isIntersecting) stopCycle(); }), { threshold: .15 }).observe($("heroFrame"));
+
+  /* ---------- thumbnails: real players drawn small, so the proportions stay true ---------- */
+  const fit = new ResizeObserver(es => es.forEach(en => {
+    const p = en.target.querySelector("reskin-player");
+    if (p) p.style.transform = `scale(${en.contentRect.width / 880})`;
+  }));
+  function makeThumb(label, sub, extra) {
+    const btn = document.createElement("button");
+    btn.type = "button"; btn.className = "thumb"; btn.setAttribute("aria-pressed", "false");
+    btn.innerHTML = `<div class="mini" inert><reskin-player></reskin-player></div><div class="t"><b></b>${extra ? '<span class="mono"></span>' : ""}</div>${sub ? "<small></small>" : ""}`;
+    btn.querySelector("b").textContent = label;
+    if (extra) btn.querySelector(".mono").textContent = extra;
+    if (sub) btn.querySelector("small").textContent = sub;
+    fit.observe(btn.querySelector(".mini"));
+    return btn;
+  }
+  function buildThumbs() {
+    $("dirRail").innerHTML = "";
+    DIRS.forEach(d => {
+      const t = makeThumb(d.name, d.line);
+      t.dataset.id = d.id;
+      t.setAttribute("aria-label", `${d.name}: ${d.line}`);
+      t.addEventListener("click", () => { dirSel = d.id; paintDirections(); });
+      $("dirRail").appendChild(t);
+    });
+    $("preTiles").innerHTML = "";
+    Reskin.presets.forEach(p => {
+      const t = makeThumb(p.name);
+      t.dataset.id = p.id;
+      t.setAttribute("aria-label", `${p.name} preset`);
+      t.addEventListener("click", () => { preSel = p.id; paintPresets(); });
+      $("preTiles").appendChild(t);
+    });
+  }
+
+  let stagesLive = false;
+  function paintDirections() {
+    const d = DIRS.find(x => x.id === dirSel), look = lookFor(dirSel);
+    setPlayer($("dirStage"), look, "talk", stagesLive);
+    $("dirName").textContent = d.name; $("dirDesc").textContent = d.desc;
+    $("dirEdit").href = studioHref(look.theme); $("dirEdit").dataset.theme = look.theme;
+    [...$("dirRail").children].forEach(t => {
+      t.setAttribute("aria-pressed", t.dataset.id === dirSel ? "true" : "false");
+      setPlayer(t.querySelector("reskin-player"), lookFor(t.dataset.id), "talk", false);
+    });
+  }
+  function paintPresets() {
+    const p = Reskin.presets.find(x => x.id === preSel), look = lookFor("mark", preSel);
+    setPlayer($("preStage"), look, "teaser", stagesLive);
+    $("preName").textContent = p.name;
+    $("preDesc").textContent = `${PRESET_LINE[p.id]} ${p.radius}px corners, ${ICON_NAMES[p.icons]} icons, ${FONT_NAMES[p.font]}.`;
+    $("preEdit").href = studioHref(look.theme); $("preEdit").dataset.theme = look.theme;
+    const vids = ["film", "talk", "teaser"];
+    [...$("preTiles").children].forEach((t, i) => {
+      t.setAttribute("aria-pressed", t.dataset.id === preSel ? "true" : "false");
+      setPlayer(t.querySelector("reskin-player"), lookFor("mark", t.dataset.id), vids[i % 3], false);
+    });
+  }
+  new IntersectionObserver((es, ob) => es.forEach(en => {
+    if (!en.isIntersecting) return;
+    ob.disconnect(); stagesLive = true; paintDirections(); paintPresets();
+  }), { rootMargin: "400px 0px" }).observe($("directions"));
+
+  /* ---------- how it reads ---------- */
+  function paintRead() {
+    const b = B(), r = b.res.roles, sig = b.res.look("signature", "", pageMode()).state;
+    $("readLogo").src = b.url; $("readLogo").alt = b.name + " logo";
+    const sym = b.wide ? b.res.symbol : b.url;
+    $("readSym").src = sym || b.url; $("readSym").alt = b.name + " symbol";
+    $("readSymBox").classList.toggle("off", !sym);
+    $("swatches").innerHTML = [["Accent", r.accent], ["Scrubber", r.bar], ["Surface", r.surface]]
+      .map(([k, hex]) => `<div class="sw"><i style="background:${hex}"></i><span><b>${k}</b>${hex}</span></div>`).join("");
+    const chips = b.res.chips.length ? b.res.chips : ["Free-form shape", "Solid fills", "Compact mark", "Brand colors"];
+    const rows = [
+      ["Colors", `${chips[3]}, ranked by how much of the logo they cover`, "accent " + r.accent],
+      ["Proportions", b.wide ? "A wordmark. Its symbol is cut out for you, from SVG or PNG" : "A compact mark, it fits any control", b.wide ? "symbol on the scrubber" : "logo on the scrubber"],
+      ["Contrast", sig.logoLum < .45 ? "A dark logo that would vanish on a dark player" : "Bright enough to sit on the player as it is", sig.logoLum < .45 ? "white plate" : "no plate"],
+      ["Corners", chips[0], sig.radius + "px radius"],
+      ["Line weight", chips[1], ICON_NAMES[sig.icons] + " icons"],
+      ["Type", "Matched to the shape it reads", FONT_NAMES[sig.font]]
+    ];
+    $("readRows").innerHTML = rows.map((_, i) => `<div class="row rv" style="--i:${i % 2}"><span class="k"></span><span class="v"></span><span class="then"></span></div>`).join("");
+    [...$("readRows").children].forEach((row, i) => { row.querySelector(".k").textContent = rows[i][0]; row.querySelector(".v").textContent = rows[i][1]; row.querySelector(".then").textContent = rows[i][2]; });
+  }
+
+  /* ---------- code ---------- */
+  const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const tint = h => esc(h).replace(/([\w-]+)=("[^"]*")/g, '<span class="a">$1</span>=<span class="s">$2</span>').replace(/(&lt;\/?)([\w-]+)/g, '$1<span class="t">$2</span>');
+  function renderCode() {
+    const look = lookFor("mark");
+    let txt, note;
+    if (codeTab === "site") {
+      txt = `<script src="${SITE}/reskin-lite.js"></` + `script>\n<reskin-player\n  src="your-video.mp4"\n  logo="your-logo.svg"\n  theme="${look.theme}">\n</reskin-player>`;
+      note = "Swap in your own video and logo. The studio fills these in for you, logo and symbol included.";
+    } else {
+      const q = new URLSearchParams({ theme: look.theme, src: "your-video.mp4" });
+      txt = `<iframe\n  src="${SITE}/embed.html?${q.toString()}"\n  style="width:100%;aspect-ratio:16/9;border:0"\n  allow="fullscreen; picture-in-picture" allowfullscreen>\n</iframe>`;
+      note = "Works in Framer, Webflow, WordPress and Notion embed blocks.";
+    }
+    $("codeOut").innerHTML = tint(txt); $("codeOut").dataset.raw = txt; $("codeNote").textContent = note;
+    const LABELS = ["version", "preset", "accent", "scrubber", "surface", "text", "light surface", "light text", "mode", "icons", "font", "size", "radius", "bar height", "direction", "shape", "switches"];
+    $("parts").innerHTML = look.theme.split(".").map((seg, i) => `<span class="part"><code>${i >= 2 && i <= 7 ? `<i style="background:#${seg}"></i>` : ""}${esc(seg)}</code><span>${LABELS[i] || ""}</span></span>`).join("");
+  }
+  [["tabSite", "site"], ["tabEmbed", "embed"]].forEach(([id, tab]) => $(id).addEventListener("click", () => {
+    codeTab = tab;
+    $("tabSite").setAttribute("aria-selected", tab === "site"); $("tabEmbed").setAttribute("aria-selected", tab === "embed");
+    renderCode();
+  }));
+  $("copyBtn").addEventListener("click", () => {
+    const label = $("copyBtn").querySelector("span"), raw = $("codeOut").dataset.raw;
+    const done = t => { label.textContent = t; setTimeout(() => { label.textContent = "Copy"; }, 1600); };
+    const sel = () => { const r = document.createRange(); r.selectNodeContents($("codeOut")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); };
+    try { navigator.clipboard.writeText(raw).then(() => done("Copied"), () => { sel(); done("Selected, press copy"); }); } catch (e) { sel(); done("Selected, press copy"); }
+  });
+
+  /* ---------- studio hand-off ---------- */
+  const studioHref = theme => "studio.html?theme=" + encodeURIComponent(theme);
+  function updateStudioLinks() {
+    const theme = lookFor("mark").theme;
+    document.querySelectorAll(".studio-link").forEach(a => { a.href = studioHref(theme); a.dataset.theme = theme; });
+  }
+  document.addEventListener("click", e => {
+    const a = e.target.closest && e.target.closest(".studio-link, .studio-stage");
+    if (!a) return;
+    const b = B(), data = { theme: a.dataset.theme || "", brand: b.sample ? b.name : "", logo: b.sample ? "" : b.url };
+    try { sessionStorage.setItem("reskin:handoff", JSON.stringify(data)); } catch (err) {}
+    try { localStorage.setItem("reskin:handoff", JSON.stringify(data)); } catch (err) {}
+  });
+
+  /* ---------- choosing a brand ---------- */
+  /* ---------- light and dark compare ---------- */
+  const cmp = $("compare"), cmpRange = $("cmpRange");
+  const setPos = v => { v = Math.max(0, Math.min(100, v)); cmp.style.setProperty("--pos", v + "%"); cmpRange.value = Math.round(v); };
+  function paintModes() {
+    // the Soft preset has a solid control bar, so the two palettes read clearly side by side
+    setPlayer($("cmpDark"), lookFor("mark", "soft", "dark"), "film", false);
+    setPlayer($("cmpLight"), lookFor("mark", "soft", "light"), "film", false);
+    $("modeNow").textContent = matchMedia("(prefers-color-scheme: dark)").matches ? " (your device: dark)" : " (your device: light)";
+  }
+  let dragging = false;
+  const fromEvent = e => { const r = cmp.getBoundingClientRect(); setPos((e.clientX - r.left) / r.width * 100); };
+  cmp.addEventListener("pointerdown", e => { dragging = true; cmp.setPointerCapture(e.pointerId); fromEvent(e); });
+  cmp.addEventListener("pointermove", e => { if (dragging) fromEvent(e); });
+  ["pointerup", "pointercancel"].forEach(ev => cmp.addEventListener(ev, () => { dragging = false; }));
+  cmpRange.addEventListener("input", () => setPos(+cmpRange.value));
+  // a single sweep the first time it comes into view, so the handle reads as something to drag
+  new IntersectionObserver((es, ob) => es.forEach(en => {
+    if (!en.isIntersecting || reduce) return;
+    ob.disconnect();
+    const keys = [[0, 50], [700, 26], [1500, 72], [2200, 50]], t0 = performance.now();
+    const ease = t => 1 - Math.pow(1 - t, 3);
+    const step = now => {
+      if (dragging) return;
+      const t = now - t0, i = keys.findIndex(k => k[0] > t);
+      if (i < 0) return setPos(50);
+      const [ta, va] = keys[i - 1], [tb, vb] = keys[i];
+      setPos(va + (vb - va) * ease((t - ta) / (tb - ta)));
+      requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }), { threshold: .5 }).observe(cmp);
+
+  /* ---------- captions, chapters, transcript ---------- */
+  const ccEl = $("ccPlayer"), ccBtns = [...document.querySelectorAll(".cc-langs button")];
+  let ccLang = "en", ccSeen = false;
+  const ccVideo = () => ccEl.querySelector("video");
+  function ccApply() {
+    const v = ccVideo();
+    if (!v) return;
+    [...v.textTracks].forEach(t => { if (t.kind === "captions" || t.kind === "subtitles") t.mode = t.language === ccLang ? "showing" : "disabled"; });
+  }
+  function ccRun() {
+    const v = ccVideo();
+    if (!v) return;
+    ccApply();
+    v.addEventListener("loadedmetadata", ccApply, { once: true });
+    if (!ccSeen || reduce) return;
+    v.muted = true; v.loop = true;
+    const p = v.play(); if (p && p.catch) p.catch(() => {});
+  }
+  function paintCaptions() {
+    const look = lookFor("mark");
+    const st = Object.assign({}, look.state, { transcript: true, chapters: true, rate: true });
+    setPlayer(ccEl, { theme: Reskin.encode(st), symbol: look.symbol }, "talk", true);
+    setTimeout(ccRun, 60);
+  }
+  ccBtns.forEach(b => b.addEventListener("click", () => {
+    ccLang = b.dataset.lang;
+    ccBtns.forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
+    ccApply();
+  }));
+  // plays muted while it is on screen, so the captions and the transcript move on their own
+  new IntersectionObserver(es => es.forEach(en => {
+    ccSeen = en.isIntersecting;
+    const v = ccVideo();
+    if (!v) return;
+    if (ccSeen) ccRun(); else if (!v.paused && v.muted) v.pause();
+  }), { threshold: .35 }).observe(ccEl);
+
+  function paintBelow() { belowDirty = false; paintDirections(); paintPresets(); paintRead(); paintModes(); paintCaptions(); renderCode(); }
+  function choose(i, user) {
+    if (user) { cycling && (belowDirty = false); stopCycle(); }
+    cur = i;
+    paintHero(true);
+    paintBelow();
+    say(brands[i].name + " is on every player now.");
+  }
+
+  /* ---------- upload ---------- */
+  function prepLogo(file) {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onerror = () => reject(new Error("That file could not be read."));
+      r.onload = () => {
+        if (file.type === "image/svg+xml" && file.size < 80000) return resolve(r.result);
+        const im = new Image();
+        im.onerror = () => reject(new Error("That file is not an image Reskin can read. Try PNG, SVG or JPG."));
+        im.onload = () => {
+          const sc = Math.min(1, 480 / Math.max(im.naturalWidth, im.naturalHeight));
+          const c = document.createElement("canvas");
+          c.width = Math.max(1, Math.round(im.naturalWidth * sc)); c.height = Math.max(1, Math.round(im.naturalHeight * sc));
+          c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
+          resolve(c.toDataURL("image/png"));
+        };
+        im.src = r.result;
+      };
+      r.readAsDataURL(file);
+    });
+  }
+  async function useFile(file) {
+    $("err").textContent = "";
+    if (!file) return;
+    if (!/^image\//.test(file.type)) { $("err").textContent = "That file is not an image. Try a PNG, SVG or JPG logo."; return; }
+    try {
+      const url = await prepLogo(file);
+      const res = await Reskin.fromLogo(url);
+      const b = { name: "Your logo", url, res, wide: res.wide, sample: false };
+      const at = brands.findIndex(x => !x.sample);
+      if (at >= 0) brands[at] = b; else brands.push(b);
+      renderPickers();
+      choose(brands.indexOf(b), true);
+    } catch (e) { $("err").textContent = (e && e.message) || "That logo could not be read. Try another file."; }
+  }
+  $("logoFile").addEventListener("change", e => { useFile(e.target.files[0]); e.target.value = ""; });
+  const hero = document.querySelector(".hero");
+  hero.addEventListener("dragover", e => e.preventDefault());
+  hero.addEventListener("drop", e => { e.preventDefault(); useFile(e.dataTransfer.files[0]); });
+
+  /* ---------- menu and theme ---------- */
+  const menuBtn = $("menuBtn"), mnav = $("mnav");
+  const setMenu = open => { menuBtn.setAttribute("aria-expanded", open ? "true" : "false"); mnav.hidden = !open; };
+  menuBtn.addEventListener("click", () => setMenu(mnav.hidden));
+  mnav.addEventListener("click", e => { if (e.target.closest("a")) setMenu(false); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !mnav.hidden) { setMenu(false); menuBtn.focus(); } });
+  matchMedia("(min-width: 1041px)").addEventListener("change", e => { if (e.matches) setMenu(false); });
+
+  function applyTheme(t) {
+    if (t) document.documentElement.setAttribute("data-theme", t); else document.documentElement.removeAttribute("data-theme");
+    paintHero(false); paintBelow();
+  }
+  try { const saved = localStorage.getItem("reskin:site-theme"); if (saved === "light" || saved === "dark") document.documentElement.setAttribute("data-theme", saved); } catch (e) {}
+  document.querySelectorAll(".theme-btn").forEach(btn => btn.addEventListener("click", () => {
+    const next = pageMode() === "dark" ? "light" : "dark";
+    try { localStorage.setItem("reskin:site-theme", next); } catch (e) {}
+    applyTheme(next);
+  }));
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (!document.documentElement.getAttribute("data-theme")) applyTheme(""); });
+
+  /* ---------- headings: words come into focus ---------- */
+  function splitWords(el) {
+    let n = 0;
+    const walk = node => [...node.childNodes].forEach(ch => {
+      if (ch.nodeType === 1) return walk(ch);
+      if (ch.nodeType !== 3) return;
+      const frag = document.createDocumentFragment();
+      ch.textContent.split(/(\s+)/).forEach(t => {
+        if (!t) return;
+        if (/^\s+$/.test(t)) { frag.append(t); return; }
+        const w = document.createElement("span");
+        w.className = "w"; w.style.setProperty("--w", n++); w.textContent = t;
+        frag.append(w);
+      });
+      ch.replaceWith(frag);
+    });
+    const text = el.textContent.replace(/\s+/g, " ").trim();
+    walk(el);
+    // screen readers get the heading as one sentence; the animated words are hidden from them
+    const shown = document.createElement("span");
+    shown.setAttribute("aria-hidden", "true");
+    while (el.firstChild) shown.appendChild(el.firstChild);
+    const said = document.createElement("span");
+    said.className = "sr-only"; said.textContent = text;
+    el.append(said, shown);
+    el.classList.add("split");
+  }
+  document.querySelectorAll(".split-me").forEach(splitWords);
+  requestAnimationFrame(() => requestAnimationFrame(() => $("h1").classList.add("in")));
+  const wordsIO = new IntersectionObserver(es => es.forEach(en => en.target.classList.toggle("in", en.isIntersecting)), { threshold: .4 });
+  document.querySelectorAll("h2.split").forEach(h => wordsIO.observe(h));
+
+  /* ---------- the numbered pins step aside while the video plays ---------- */
+  const heroFrame = $("heroFrame");
+  ["play", "playing"].forEach(ev => heroFrame.addEventListener(ev, () => heroFrame.classList.add("playing"), true));
+  ["pause", "ended", "emptied"].forEach(ev => heroFrame.addEventListener(ev, () => heroFrame.classList.remove("playing"), true));
+
+  /* ---------- start ---------- */
+  async function start() {
+    for (const s of SAMPLES) {
+      const res = await Reskin.fromLogo(s.url);
+      brands.push({ name: s.name, url: s.url, res, wide: res.wide, sample: true });
+    }
+    buildThumbs();
+    renderPickers();
+    paintHero(false);
+    paintBelow();
+    if (cycling) startCycle(); else document.querySelector("[data-hero]").classList.remove("cycling");
+  }
+  if (window.Reskin && Reskin.fromLogo) start();
+  else $("err").textContent = "The player script did not load. Refresh the page to try again.";
+})();
+</script>
