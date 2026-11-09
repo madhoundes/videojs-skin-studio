@@ -17,8 +17,8 @@ Upload a logo, pick a direction, and get a Video.js v10 player skin in your bran
 |---|---|
 | `index.html` | The landing page: drop in a logo and see the three directions and twelve presets in your brand |
 | `studio.html` | The studio: every setting, live preview, and the "Get the code" drawer |
-| `reskin.js` | One file with Video.js v10, the skin and Mux playback. Powers `<reskin-player>` and the embed page (385 KB, 116 KB gzipped) |
-| `reskin-lite.js` | The same player without Mux, for plain video files like MP4 and WebM (248 KB, 74 KB gzipped). The studio hands this one out unless you use Mux |
+| `reskin.js` | One file with Video.js v10, the skin, Mux playback and YouTube and Vimeo links. Powers `<reskin-player>` and the embed page (441 KB, 131 KB gzipped) |
+| `reskin-lite.js` | The same player without Mux, YouTube or Vimeo, for plain video files like MP4 and WebM (249 KB, 73 KB gzipped). The studio hands this one out unless you use Mux, YouTube or Vimeo |
 | `embed.html` | The page an iframe or embed link points to. Reads the theme from the link |
 | `src/` | Source for both builds. `core.js` is generated from `studio.html`, `brand.js` reads a logo for the landing page |
 | `tools/extract-core.mjs` | Copies the skin builder out of `studio.html` into `src/core.js`, so the studio and the player never drift apart |

@@ -12,7 +12,9 @@
   },
   "dependencies": {
     "@videojs/html": "10.1.0",
-    "@videojs/mux-video": "10.1.0"
+    "@videojs/mux-video": "10.1.0",
+    "@videojs/vimeo-video": "^10.1.0",
+    "@videojs/youtube-video": "^10.1.0"
   },
   "devDependencies": {
     "esbuild": "0.24.2"

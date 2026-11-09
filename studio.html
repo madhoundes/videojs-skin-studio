@@ -10,6 +10,8 @@
 
 <script type="module" src="https://cdn.jsdelivr.net/npm/@videojs/cdn@10.1.0/video-player.js"></script>
 <script type="module" src="https://cdn.jsdelivr.net/npm/@videojs/cdn@10.1.0/media/mux-video.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@videojs/cdn@10.1.0/media/youtube-video.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@videojs/cdn@10.1.0/media/vimeo-video.js"></script>
 <script type="module" src="https://cdn.jsdelivr.net/npm/@videojs/cdn@10.1.0/ui/container.js"></script>
 <script type="module" src="https://cdn.jsdelivr.net/npm/@videojs/cdn@10.1.0/ui/controls.js"></script>
 <script type="module" src="https://cdn.jsdelivr.net/npm/@videojs/cdn@10.1.0/ui/controls-backdrop.js"></script>
@@ -535,6 +537,14 @@ kbd.wide { min-width: 52px; }
 .xhead h3 { margin: 0; font-size: 14px; font-weight: 600; }
 .xhead span, .xnote { color: var(--muted); font-size: 12px; }
 .xnote { margin: -2px 0 4px; }
+.xlink .xinput { font-family: inherit; font-size: 13px; color: var(--ink); }
+.xlink .copy2 { height: 36px; }
+.xlink-note { display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; line-height: 1.45; color: var(--ink-2); }
+.xlink-note::before { content: ""; flex: none; width: 8px; height: 8px; margin-top: 5px; border-radius: 50%; background: #2f9e6b; }
+.xlink-note[data-tone="warn"]::before { background: #d99a1e; }
+.xlink-note[data-tone="err"]::before { background: #d64545; }
+.xlink-note[data-tone="err"] { color: var(--ink); }
+.xlink-note[hidden] { display: none; }
 .xfield { display: grid; gap: 6px; font-size: 12.5px; font-weight: 500; }
 .xfield small { color: var(--muted); font-weight: 400; margin-left: 4px; }
 .xfield input, .xrow input, .xcap input, .xcap select {
@@ -801,7 +811,11 @@ kbd.wide { min-width: 52px; }
       </label>
       <div class="xprog" id="xProg" hidden><div class="xbar"><i id="xBar"></i></div><span id="xStatus">Uploading 0%</span></div>
       <div class="xor"><span>or paste a link</span></div>
-      <input type="url" id="xVideo" class="xinput" placeholder="https://your-site.com/video.mp4 or a Mux link" autocomplete="off" aria-label="Video link">
+      <form class="xrow xlink" id="xLinkForm">
+        <input type="text" inputmode="url" id="xVideo" class="xinput" placeholder="https://your-site.com/video.mp4 or a Mux link" autocomplete="off" aria-label="Video link" aria-describedby="xLinkNote">
+        <button type="submit" class="copy2">Use video</button>
+      </form>
+      <p class="xnote xlink-note" id="xLinkNote" role="status" hidden></p>
       <p class="xnote" id="xVideoNote">Until you add a video, the code plays the demo film so you can test it right away.</p>
     </section>
 
@@ -907,6 +921,19 @@ function rsTrimOne(img) {
     });
   }
   hit.then(function (u) { rsTrimCache[src] = u; apply(u); });
+}
+
+// YouTube and Vimeo links play through Video.js's own <youtube-video> and <vimeo-video>, inside the same skin
+function rsEmbedOf(src) {
+  var u = String(src || "");
+  var yt = u.match(/(?:youtube(?:-nocookie)?\.com\/(?:watch\?(?:[^#]*&)?v=|embed\/|shorts\/|live\/|v\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  if (yt) return { tag: "youtube-video", name: "YouTube", id: yt[1] };
+  var vm = u.match(/vimeo\.com\/(?:video\/|channels\/[^/]+\/|groups\/[^/]+\/videos\/)?(\d{6,})/);
+  if (vm) return { tag: "vimeo-video", name: "Vimeo", id: vm[1] };
+  return null;
+}
+function rsMediaOf(root) {
+  return root.querySelector("youtube-video, vimeo-video") || root.querySelector("video");
 }
 
 function reskinBackfill(root) {
@@ -1334,8 +1361,8 @@ video-player { display: block; }
 }
 .rs-player:focus-visible { outline: 3px solid var(--rs-accent); outline-offset: 3px; }
 .rs-player:fullscreen { border-radius: 0; }
-.rs-player video {
-  position: absolute; inset: 0; width: 100%; height: 100%;
+.rs-player video, .rs-player youtube-video, .rs-player vimeo-video {
+  position: absolute; inset: 0; width: 100%; height: 100%; min-width: 0; min-height: 0;
   object-fit: var(--rs-fit, contain); display: block;
 }
 /* captions: drawn by the browser, styled here */
@@ -1998,14 +2025,15 @@ ${s.wide ? "" : `.rs-player .rs-big {
       </media-menu-content>
     </media-menu>`;
 
+    const emb = !o.playbackId && rsEmbedOf(o.src);
     const player = `<video-player>
   <media-container class="rs-player" tabindex="0">
     ${s.backfill ? `<canvas class="rs-backfill" width="48" height="27" aria-hidden="true"></canvas>
-    ` : ""}${o.playbackId ? `<mux-video src="https://stream.mux.com/${o.playbackId}.m3u8" crossorigin="anonymous" playsinline${o.caps[0] ? ` data-rs-cap="${o.caps[0][0]}"` : ""}>
+    ` : ""}${emb ? `<${emb.tag} src="${String(o.src).replace(/"/g, "&quot;")}" playsinline></${emb.tag}>` : o.playbackId ? `<mux-video src="https://stream.mux.com/${o.playbackId}.m3u8" crossorigin="anonymous" playsinline${o.caps[0] ? ` data-rs-cap="${o.caps[0][0]}"` : ""}>
       <video slot="media" crossorigin="anonymous" playsinline preload="metadata" poster="https://image.mux.com/${o.playbackId}/thumbnail.webp?time=1"></video>` : `<video src="${o.src}"${o.poster ? ` poster="${o.poster}"` : ""}${o.cors ? ` crossorigin="anonymous"` : ""} playsinline preload="metadata">`}
-${(o.playbackId ? [] : o.caps).map((c, i) => `      <track kind="${i ? "subtitles" : "captions"}" src="${c[0]}" srclang="${c[1]}" label="${c[2]}"${i ? "" : " default"}>`).join("\n")}
-${o.thumbs ? `      <track kind="metadata" label="thumbnails" src="${o.thumbs}" default>` : ""}${chTrack}
-    ${o.playbackId ? "</mux-video>" : "</video>"}${logo}
+${emb ? "" : (o.playbackId ? [] : o.caps).map((c, i) => `      <track kind="${i ? "subtitles" : "captions"}" src="${c[0]}" srclang="${c[1]}" label="${c[2]}"${i ? "" : " default"}>`).join("\n")}
+${emb ? "" : `${o.thumbs ? `      <track kind="metadata" label="thumbnails" src="${o.thumbs}" default>` : ""}${chTrack}
+    ${o.playbackId ? "</mux-video>" : "</video>"}`}${logo}
 
     <media-buffering-indicator class="rs-buffering"></media-buffering-indicator>
     <div class="rs-center">
@@ -2177,13 +2205,37 @@ function rsDecode(code) {
   let mux = null;   // { playbackId, captions: { url, lang, name, status } }
   // A pasted Mux link (stream.mux.com/ID.m3u8) or a bare playback ID counts as a Mux video too.
   const muxIdFrom = v => { const m = v.match(/(?:stream|image)\.mux\.com\/([A-Za-z0-9]{20,})/) || v.match(/^([A-Za-z0-9]{30,})$/); return m ? m[1] : ""; };
+  // the link only counts once "Use video" is pressed (or Enter), so half-typed links never reach the code
+  let linkVal = "";
+  const PAGE_HOSTS = /(^|\.)(tiktok\.com|instagram\.com|facebook\.com|fb\.watch|x\.com|twitter\.com|drive\.google\.com|dropbox\.com|loom\.com)$/i;
+  const FILE_EXT = /\.(mp4|m4v|webm|mov|ogv|m3u8)(?:[?#]|$)/i;
+  function checkLink(v) {
+    if (!v) return { ok: true, tone: "", msg: "" };
+    if (muxIdFrom(v)) return { ok: true, tone: "ok", msg: "Mux video. It plays in the preview, with the captions Mux wrote for it." };
+    let u;
+    try { u = new URL(/^[a-z]+:\/\//i.test(v) ? v : "https://" + v); } catch (e) { return { ok: false, tone: "err", msg: "That is not a link. Paste a full address, starting with https://" }; }
+    const emb = rsEmbedOf(u.href);
+    if (emb) return { ok: true, tone: "ok", msg: `${emb.name} video. It plays inside your skin. The owner has to allow embedding on ${emb.name}, and captions come from ${emb.name} once it plays.`, url: u.href };
+    if (/(^|\.)(youtube\.com|youtu\.be|vimeo\.com)$/i.test(u.hostname)) return { ok: false, tone: "err", msg: "That link has no video in it. Open the video itself and copy its link, or use Share." };
+    if (PAGE_HOSTS.test(u.hostname)) {
+      const site = u.hostname.replace(/^www\./, "").split(".")[0];
+      const name = { tiktok: "TikTok", instagram: "Instagram", facebook: "Facebook", fb: "Facebook", x: "X", twitter: "X", drive: "Google Drive", dropbox: "Dropbox", loom: "Loom" }[site] || "that site";
+      return { ok: false, tone: "err", msg: `That is a page on ${name}, not a video file, so a custom player cannot play it. Upload the video above, or paste a link that ends in .mp4, .webm or .m3u8.` };
+    }
+    if (FILE_EXT.test(u.pathname + u.search)) return { ok: true, tone: "ok", msg: "Video file. It plays in the preview now. Add captions and chapters to the code by hand if you have them.", url: u.href };
+    return { ok: true, tone: "warn", msg: "This link does not end in .mp4, .webm or .m3u8. If the preview stays black, it is a web page and not the video file itself.", url: u.href };
+  }
+  function linkNote(tone, msg) {
+    const n = $("xLinkNote");
+    n.hidden = !msg; n.textContent = msg || ""; n.dataset.tone = tone || "";
+  }
   function activeMux() {
-    const v = $("xVideo").value.trim(), pid = muxIdFrom(v);
+    const v = linkVal, pid = muxIdFrom(v);
     if (pid) return { playbackId: pid, captions: null };
     return !v && mux && mux.playbackId ? mux : null;
   }
   async function exportData() {
-    const video = $("xVideo").value.trim();
+    const video = muxIdFrom(linkVal) ? linkVal : ((checkLink(linkVal).url) || "");
     const own = activeMux();
     const demo = !video && !own;
     const d = {
@@ -2219,8 +2271,8 @@ function rsDecode(code) {
     const tag = [`<reskin-player`, d.playbackId ? `  playback-id="${d.playbackId}"` : `  src="${attr(d.src)}"`, d.cors ? `  crossorigin="anonymous"` : "", d.poster ? `  poster="${attr(d.poster)}"` : "", d.logo ? `  logo="${attr(d.logo)}"` : "", d.symbol ? `  symbol="${attr(d.symbol)}"` : "",
       `  theme="${d.theme}"`, d.caps.length ? `  captions="${attr(d.caps.map(c => c.join("|")).join(", "))}"` : "", d.chapters ? `  chapters="${attr(d.chapters)}"` : "", d.thumbnails ? `  thumbnails="${attr(d.thumbnails)}"` : ""]
       .filter(Boolean).join("\n") + `>\n</reskin-player>`;
-    // plain video files get the smaller build; Mux playback needs the full one
-    const two = `<script src="${SITE}/${d.playbackId ? "reskin.js" : "reskin-lite.js"}"><\/script>\n${tag}`;
+    // plain video files get the smaller build; Mux, YouTube and Vimeo need the full one
+    const two = `<script src="${SITE}/${d.playbackId || rsEmbedOf(d.src) ? "reskin.js" : "reskin-lite.js"}"><\/script>\n${tag}`;
     const ai = code => `Add this video player to my page exactly as written. Put it where the main video belongs (for example under the hero headline), full width of its container. Keep every attribute unchanged, and load the script tag only once per page.\n\n${code}`;
     exportCache = { url, iframe, two, "ai-iframe": ai(iframe), "ai-two": ai(two) };
     const short = t => t.replace(/data:image\/(\w+);base64,[A-Za-z0-9+/=%]+/g, (m, kind) => `data:image/${kind};base64,… (your logo, ${(m.length / 1024).toFixed(1)} KB)`)
@@ -2230,6 +2282,16 @@ function rsDecode(code) {
     $("xTwo").textContent = short(two);
   }
   const canUpload = SITE === location.origin;
+  // the upload API answers in JSON; anything else means the api folder is missing or the site has no functions
+  async function readJSON(r) {
+    const t = await r.text();
+    try { return JSON.parse(t); }
+    catch (e) {
+      throw new Error(r.status === 404
+        ? "The upload service was not found on this site. Check that the api folder is in your GitHub repo, then redeploy on Vercel."
+        : `The upload service answered with an error (${r.status}). Try again in a minute.`);
+    }
+  }
   const setStatus = t => { $("xStatus").textContent = t; };
   async function startUpload(file) {
     if (!file) return;
@@ -2238,7 +2300,7 @@ function rsDecode(code) {
     let up;
     try {
       const r = await fetch("/api/mux-upload", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lang: $("xLang").value }) });
-      up = await r.json();
+      up = await readJSON(r);
       if (!r.ok) throw new Error(up.error || "The upload could not start.");
     } catch (e) { setStatus(e.message || "The upload could not start."); return; }
     try {
@@ -2251,13 +2313,13 @@ function rsDecode(code) {
         x.send(file);
       });
     } catch (e) { setStatus(e.message); return; }
-    $("xVideo").value = "";
+    $("xVideo").value = ""; linkVal = ""; linkNote("", "");
     setStatus("Uploaded. Mux is preparing the video…");
     pollMux(up.id, 0);
   }
   async function pollMux(id, n) {
     let j;
-    try { const r = await fetch(`/api/mux-status?upload=${encodeURIComponent(id)}`); j = await r.json(); if (!r.ok) throw new Error(j.error); }
+    try { const r = await fetch(`/api/mux-status?upload=${encodeURIComponent(id)}`); j = await readJSON(r); if (!r.ok) throw new Error(j.error); }
     catch (e) { setStatus((e && e.message) || "Could not reach Mux. Retrying…"); if (n < 60) setTimeout(() => pollMux(id, n + 1), 5000); return; }
     if (j.status === "errored") { setStatus("Mux could not process this video. Try another file."); return; }
     if (j.playbackId && j.status === "ready") {
@@ -2346,9 +2408,10 @@ ${stacked ? "#preview .rs-transcript { min-height: 0; height: 182px; }" : ""}
 
   let seq = 0;
   function renderPlayer() {
-    const old = preview.querySelector("video");
+    const old = rsMediaOf(preview);
     const own = activeMux();
-    const key = (own ? "mux:" + own.playbackId : state.video) + state.aspect;
+    const file = own ? "" : (checkLink(linkVal).url || "");
+    const key = (own ? "mux:" + own.playbackId : file ? "link:" + file : state.video) + state.aspect;
     const keep = old && old.dataset.key === key;
     const t = keep ? old.currentTime : 0;
     const wasPlaying = keep ? !old.paused : false;
@@ -2358,9 +2421,17 @@ ${stacked ? "#preview .rs-transcript { min-height: 0; height: 182px; }" : ""}
     const [src, poster, thumbs] = state.aspect === "16 / 9" ? v.wide : v.tall;
     preview.innerHTML = own
       ? buildMarkup(state, { playbackId: own.playbackId, caps: own.captions && own.captions.status === "ready" ? [[own.captions.url, own.captions.lang, own.captions.name]] : [], logo: state.logo })
+      : file ? buildMarkup(Object.assign({}, state, { transcript: false, chapters: false }), { src: file, caps: [], logo: state.logo })
       : buildMarkup(state, { src, poster, thumbs, caps: v.caps, ch: v.ch, logo: state.logo });
-    const vid = preview.querySelector("video");
+    const vid = rsMediaOf(preview);
     vid.dataset.key = key;
+    const emb = file && rsEmbedOf(file);
+    if (file) vid.addEventListener("error", () => {
+      if (my !== seq) return;
+      linkNote("err", emb
+        ? `${emb.name} would not play this video here. It may be private, or its owner has turned off embedding. In ${emb.name} Studio, allow embedding for the video, or upload the file above.`
+        : "This link did not play. It needs to be a direct video file that allows other sites to load it.");
+    }, { once: true });
     vid.muted = muted;
     if (t > 0) {
       vid.addEventListener("loadedmetadata", () => {
@@ -2553,11 +2624,18 @@ ${stacked ? "#preview .rs-transcript { min-height: 0; height: 182px; }" : ""}
 
   const sheet = $("codeSheet");
   $("gcToggle").addEventListener("click", () => { sheet.showModal(); renderCode(); renderExport(); requestAnimationFrame(placeAllInd); });
-  let lastPid = "";
-  $("xVideo").addEventListener("input", () => {
+  $("xLinkForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const v = $("xVideo").value.trim(), c = checkLink(v);
+    linkNote(c.tone, c.msg);
+    if (!c.ok) return;
+    linkVal = v;
     renderExport();
-    const pid = (activeMux() || {}).playbackId || "";
-    if (pid !== lastPid) { lastPid = pid; renderPlayer(); }
+    renderPlayer();
+  });
+  $("xVideo").addEventListener("input", () => {
+    // clearing the field goes back to the demo film right away
+    if (!$("xVideo").value.trim() && linkVal) { linkVal = ""; linkNote("", ""); renderExport(); renderPlayer(); }
   });
   if (!canUpload) {
     $("xDrop").classList.add("off");
