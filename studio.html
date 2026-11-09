@@ -1539,6 +1539,9 @@ media-gesture, media-hotkey { display: none; }
   padding: 6px; overflow: auto; outline: none;
   transition: translate .22s ease, opacity .22s ease;
 }
+/* closed submenus carry [hidden]; the display: grid above would otherwise show them stacked on the root list */
+.rs-menu-root[hidden], .rs-menu-panel[hidden],
+.rs-menu-panel[data-submenu]:not([data-open]):not([data-ending-style]) { display: none !important; }
 .rs-menu-root[data-child-open] { translate: -100% 0; opacity: 0; }
 .rs-menu-panel[data-submenu] { z-index: 1; }
 .rs-menu-panel[data-submenu][data-starting-style], .rs-menu-panel[data-submenu][data-ending-style] { translate: 100% 0; opacity: 0; pointer-events: none; }
@@ -2181,7 +2184,7 @@ function rsDecode(code) {
 }
 
   /* ===================== export: embed + website ===================== */
-  const SITE = /claude\.ai|claudeusercontent|anthropic/.test(location.hostname) || location.protocol === "file:" ? "https://reskin.vercel.app" : location.origin;
+  const SITE = /claude\.ai|claudeusercontent|anthropic/.test(location.hostname) || location.protocol === "file:" ? "https://videojs-skin-studio.vercel.app" : location.origin;
   const tinyCache = {};
   function tinyImage(url, max) {
     if (!url) return Promise.resolve("");
@@ -2323,13 +2326,18 @@ function rsDecode(code) {
     catch (e) { setStatus((e && e.message) || "Could not reach Mux. Retrying…"); if (n < 60) setTimeout(() => pollMux(id, n + 1), 5000); return; }
     if (j.status === "errored") { setStatus("Mux could not process this video. Try another file."); return; }
     if (j.playbackId && j.status === "ready") {
-      mux = { playbackId: j.playbackId, captions: j.captions };
+      const capState = j.captions ? j.captions.status : "none";
+      const capsReady = capState === "ready", capsFailed = capState === "errored";
+      // Mux writes the captions after the video itself is ready, and the captions track can show up a little later still,
+      // so keep checking until it is ready or failed. Only redraw the player when something changed.
+      const changed = !mux || mux.playbackId !== j.playbackId || (mux.capState || "") !== capState;
+      mux = { playbackId: j.playbackId, captions: j.captions, capState };
       $("xBar").style.width = "100%";
-      const capsReady = j.captions && j.captions.status === "ready";
-      setStatus(capsReady ? "Ready. Captions and scrub thumbnails are in your code." : "Ready. Captions are still being written, they join your code in a minute or two.");
-      renderExport();
-      renderPlayer();
-      if (!capsReady && j.captions && n < 120) setTimeout(() => pollMux(id, n + 1), 8000);
+      setStatus(capsReady ? "Ready. Captions and scrub thumbnails are in your code."
+        : capsFailed ? "Ready. Mux could not write captions for this video. Check the spoken language, or that the video has clear speech."
+        : "Ready. Mux is still writing the captions, they join the player and your code in a few minutes.");
+      if (changed) { renderExport(); renderPlayer(); }
+      if (!capsReady && !capsFailed && n < 160) setTimeout(() => pollMux(id, n + 1), 8000);
       return;
     }
     if (n < 200) setTimeout(() => pollMux(id, n + 1), 3000);
